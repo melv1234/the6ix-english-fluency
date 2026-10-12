@@ -232,31 +232,51 @@
   ];
 
   // 5. APPLICATION STATE & LOCALSTORAGE
-  const STORAGE_KEY = "toronto_english_master_state_v2";
+  const STORAGE_KEY = "toronto_english_master_state_v3";
+  const VALID_PRACTICE_MODES = ["fill", "qcm", "tiles", "writing", "listening", "voice"];
+  const LEGACY_MODE_MAP = {
+    cloze: "fill",
+    mcq: "qcm",
+    translate: "writing",
+    dictation: "listening",
+    pronunciation: "voice"
+  };
+
+  function normalizePracticeMode(m) {
+    if (!m) return "fill";
+    if (LEGACY_MODE_MAP[m]) return LEGACY_MODE_MAP[m];
+    if (VALID_PRACTICE_MODES.includes(m)) return m;
+    return "fill";
+  }
 
   function loadState() {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("toronto_english_master_state_v1");
+      const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("toronto_english_master_state_v2") || localStorage.getItem("toronto_english_master_state_v1");
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && typeof parsed === 'object') {
+          let stepFilter = String(parsed.currentStepFilter || "1");
+          if (stepFilter !== "all" && stepFilter !== "custom") {
+            const num = parseInt(stepFilter, 10);
+            if (isNaN(num) || num < 1 || num > 30) stepFilter = "1";
+          }
           return {
             xp: parsed.xp || 0,
             streak: parsed.streak || 1,
             lastActiveDate: parsed.lastActiveDate || new Date().toISOString().slice(0, 10),
             answersCount: parsed.answersCount || 0,
             correctCount: parsed.correctCount || 0,
-            completedSteps: parsed.completedSteps || [],
-            stepProgress: parsed.stepProgress || {},
-            favorites: parsed.favorites || [],
-            mistakes: parsed.mistakes || [],
-            customPhrases: parsed.customPhrases || [],
-            srsCards: parsed.srsCards || {},
+            completedSteps: Array.isArray(parsed.completedSteps) ? parsed.completedSteps : [],
+            stepProgress: (parsed.stepProgress && typeof parsed.stepProgress === 'object') ? parsed.stepProgress : {},
+            favorites: Array.isArray(parsed.favorites) ? parsed.favorites : [],
+            mistakes: Array.isArray(parsed.mistakes) ? parsed.mistakes : [],
+            customPhrases: Array.isArray(parsed.customPhrases) ? parsed.customPhrases : [],
+            srsCards: (parsed.srsCards && typeof parsed.srsCards === 'object') ? parsed.srsCards : {},
             audioSpeed: parsed.audioSpeed || 1.0,
             soundEnabled: parsed.soundEnabled !== false,
             darkMode: Boolean(parsed.darkMode),
-            currentStepFilter: parsed.currentStepFilter || "1",
-            practiceMode: parsed.practiceMode || "fill" // default: mot à trou + choix rapides
+            currentStepFilter: stepFilter,
+            practiceMode: normalizePracticeMode(parsed.practiceMode)
           };
         }
       }
@@ -468,8 +488,12 @@
 
     const soundIcon = document.getElementById('soundIcon');
     if (soundIcon) {
-      soundIcon.setAttribute('data-lucide', state.soundEnabled ? 'volume-2' : 'volume-x');
-      safeCreateIcons();
+      soundIcon.textContent = state.soundEnabled ? '🔔' : '🔕';
+    }
+
+    const themeIcon = document.getElementById('themeIcon');
+    if (themeIcon) {
+      themeIcon.textContent = state.darkMode ? '☀️' : '🌙';
     }
 
     const speedLabel = document.getElementById('speedLabel');
@@ -598,7 +622,7 @@
     }
   }
 
-  function selectStep(stepKey) {
+  function selectStep(stepKey, preferredFirstPhrase = null) {
     playSound('click');
     state.currentStepFilter = String(stepKey);
     saveState();
@@ -626,7 +650,7 @@
       }
     });
 
-    startSession(stepKey);
+    startSession(stepKey, preferredFirstPhrase);
   }
 
   // 11. EXERCISE SESSION ENGINE
@@ -637,7 +661,7 @@
   let activeSelectedTiles = [];
   let currentSelectedQCMOption = null;
 
-  function startSession(stepFilter) {
+  function startSession(stepFilter, preferredFirstPhrase) {
     const filter = String(stepFilter !== undefined ? stepFilter : (state.currentStepFilter || "1"));
     state.currentStepFilter = filter;
 
@@ -647,7 +671,6 @@
     if (filter === "custom") {
       pool = [...(state.customPhrases || [])];
       if (pool.length === 0) {
-        // Fallback notice
         showCustomNoticeInArena();
         return;
       }
@@ -661,8 +684,34 @@
       }
     }
 
-    // Pick 10 phrases
-    currentSessionPhrases = [...pool].sort(() => Math.random() - 0.5).slice(0, 10);
+    // Shuffle and pick up to 10 phrases with unique target expressions so a session never repeats the same expression
+    const shuffled = [...pool].sort(() => Math.random() - 0.5);
+    const selected = [];
+    const usedTargets = new Set();
+
+    if (preferredFirstPhrase) {
+      selected.push(preferredFirstPhrase);
+      usedTargets.add((preferredFirstPhrase.target || preferredFirstPhrase.en).toLowerCase());
+    }
+
+    for (const item of shuffled) {
+      if (selected.length >= 10) break;
+      const tKey = (item.target || item.en).toLowerCase();
+      if (!usedTargets.has(tKey)) {
+        usedTargets.add(tKey);
+        selected.push(item);
+      }
+    }
+
+    // If custom pool had fewer than 10 unique targets, fill from remaining shuffled items
+    if (selected.length < Math.min(10, shuffled.length)) {
+      for (const item of shuffled) {
+        if (selected.length >= 10) break;
+        if (!selected.includes(item)) selected.push(item);
+      }
+    }
+
+    currentSessionPhrases = selected;
     currentPhraseIndex = 0;
     sessionCorrectCount = 0;
     isCurrentAnswerChecked = false;
@@ -687,7 +736,7 @@
           <p class="text-sm font-semibold text-indigo-900 dark:text-indigo-200">
             Tu n'as pas encore ajouté de phrases dans ton catalogue.
           </p>
-          <button id="goAddPhrasesNowBtn" class="px-5 py-2.5 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-700 text-white text-xs shadow-md transition">
+          <button id="goAddPhrasesNowBtn" type="button" class="px-5 py-2.5 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-700 text-white text-xs shadow-md transition">
             ➕ Ajouter ma première phrase maintenant
           </button>
         </div>
@@ -722,11 +771,11 @@
     const catBadge = document.getElementById('cardCategoryBadge');
     if (catBadge) catBadge.textContent = phrase.category || 'Toronto Life';
 
-    // Bookmark
+    // Bookmark (Safe textContent update - never mutates SVG className)
     const isFav = state.favorites.includes(phrase.id);
     const star = document.getElementById('bookmarkIcon');
     if (star) {
-      star.className = isFav ? "w-5 h-5 fill-amber-400 stroke-amber-400 text-amber-400" : "w-5 h-5";
+      star.textContent = isFav ? "⭐ Favori" : "☆ Favori";
     }
 
     // French prompt
@@ -777,7 +826,7 @@
     if (!container) return;
     container.innerHTML = '';
 
-    const mode = state.practiceMode || 'fill';
+    const mode = normalizePracticeMode(state.practiceMode);
 
     // Build distractors list
     const target = phrase.target || phrase.en.split(' ')[0];
@@ -785,63 +834,8 @@
     const d2 = (phrase.distractors && phrase.distractors[1]) ? phrase.distractors[1] : "beside that";
     const options = [target, d1, d2].sort(() => Math.random() - 0.5);
 
-    // MODE 1: FILL IN THE BLANK (MOT À TROU + OPTIONS RAPIDES CLIC/SAISIE) - DEFAULT
-    if (mode === 'fill') {
-      const prefix = phrase.prefix !== undefined ? phrase.prefix : "";
-      const suffix = phrase.suffix !== undefined ? phrase.suffix : "";
-
-      const wrapper = document.createElement('div');
-      wrapper.className = "space-y-4";
-      wrapper.innerHTML = `
-        <div class="space-y-2">
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Complète l'expression en anglais :</label>
-          <div class="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 text-base sm:text-lg font-medium leading-relaxed flex flex-wrap items-center gap-2 shadow-sm">
-            <span>${prefix}</span>
-            <input type="text" id="clozeInput" autocomplete="off" placeholder="Tape ici..." class="px-3.5 py-1.5 rounded-xl border-2 border-rose-400 focus:border-rose-600 bg-rose-50/50 dark:bg-slate-800 text-slate-900 dark:text-white font-extrabold outline-none shadow-sm transition min-w-[150px] max-w-[320px]">
-            <span>${suffix}</span>
-          </div>
-        </div>
-
-        <!-- Quick 3 option chips for mobile / 1-click answers -->
-        <div class="space-y-1.5 pt-1">
-          <div class="text-[11px] font-bold text-slate-400 uppercase">Ou clique directement sur la bonne suggestion :</div>
-          <div class="flex flex-wrap gap-2" id="clozeOptionPills">
-            ${options.map(opt => `
-              <button type="button" class="cloze-opt-btn px-4 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-rose-500 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-bold text-xs sm:text-sm shadow-sm transition transform active:scale-95" data-val="${opt.replace(/"/g, '&quot;')}">
-                ${opt}
-              </button>
-            `).join('')}
-          </div>
-        </div>
-      `;
-
-      container.appendChild(wrapper);
-
-      const input = document.getElementById('clozeInput');
-      if (input) {
-        setTimeout(() => input.focus(), 60);
-        input.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            verifyCurrentAnswer();
-          }
-        });
-      }
-
-      container.querySelectorAll('.cloze-opt-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          if (isCurrentAnswerChecked) return;
-          playSound('click');
-          if (input) {
-            input.value = btn.dataset.val;
-            // Immediate check on click for fast fluid mobile experience
-            verifyCurrentAnswer();
-          }
-        });
-      });
-
     // MODE 2: QCM EXPRESS (3 CHOIX EN 1 CLIC)
-    } else if (mode === 'qcm') {
+    if (mode === 'qcm') {
       const prefix = phrase.prefix !== undefined ? phrase.prefix : "";
       const suffix = phrase.suffix !== undefined ? phrase.suffix : "";
 
@@ -855,7 +849,7 @@
         </div>
 
         <div class="space-y-2 pt-2">
-          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Choisis la bonne option :</label>
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Clique sur la bonne option :</label>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3" id="qcmGrid">
             ${options.map(opt => `
               <button type="button" class="qcm-opt-btn p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-rose-500 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-extrabold text-sm sm:text-base text-left transition transform active:scale-95 shadow-sm" data-val="${opt.replace(/"/g, '&quot;')}">
@@ -882,7 +876,6 @@
     // MODE 3: TILES / SENTENCE BUILDER (MOTS À ASSEMBLER AVEC TOUS LES MOTS)
     } else if (mode === 'tiles') {
       const sentenceWords = phrase.en.split(/\s+/).filter(Boolean);
-      // Create token objects to preserve duplicates like "the", "to", "you" and shuffle them
       let availableTokens = sentenceWords
         .map((w, idx) => ({ id: `token_${idx}`, word: w }))
         .sort(() => Math.random() - 0.5);
@@ -917,7 +910,6 @@
 
       function updateTilesUI() {
         if (!placedArea || !poolArea) return;
-        // Render placed
         placedArea.innerHTML = '';
         if (activeSelectedTiles.length === 0) {
           placedArea.innerHTML = '<span class="text-xs text-slate-400 italic">Clique sur les mots ci-dessous pour construire la phrase...</span>';
@@ -938,7 +930,6 @@
           });
         }
 
-        // Render pool
         poolArea.innerHTML = '';
         availableTokens.forEach((token, index) => {
           const chip = document.createElement('button');
@@ -956,8 +947,6 @@
         });
       }
 
-      // Initial shuffle of tokens
-      availableTokens.sort(() => Math.random() - 0.5);
       updateTilesUI();
 
       const clearBtn = document.getElementById('clearTilesBtn');
@@ -971,13 +960,20 @@
         });
       }
 
-    // MODE 4: FULL WRITING (TRADUCTION LIBRE AU CLAVIER)
+    // MODE 4: FULL WRITING (TRADUCTION LIBRE AU CLAVIER + BARRE DE CONTRACTIONS)
     } else if (mode === 'writing') {
+      const contractions = ["I'm", "don't", "can't", "it's", "we're", "you're", "I'd", "I'll", "didn't", "wouldn't"];
       const wrapper = document.createElement('div');
       wrapper.className = "space-y-3";
       wrapper.innerHTML = `
         <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Écris la phrase complète en anglais :</label>
         <textarea id="writingInput" rows="2" placeholder="Tape la phrase en anglais ici..." class="w-full p-4 rounded-2xl border-2 border-slate-300 dark:border-slate-600 focus:border-rose-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-bold text-base outline-none shadow-sm transition"></textarea>
+        <div class="pt-1">
+          <span class="block text-[11px] font-bold text-slate-400 mb-1.5">Insertion rapide de contractions anglaises :</span>
+          <div class="flex flex-wrap gap-1.5" id="contractionBar">
+            ${contractions.map(c => `<button type="button" class="contraction-btn px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 hover:bg-rose-100 dark:hover:bg-rose-900/40 text-slate-800 dark:text-slate-100 font-bold text-xs transition" data-insert="${c}">${c}</button>`).join('')}
+          </div>
+        </div>
       `;
       container.appendChild(wrapper);
 
@@ -985,23 +981,40 @@
       if (writingInput) {
         setTimeout(() => writingInput.focus(), 60);
         writingInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') {
+          if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            verifyCurrentAnswer();
+            e.stopPropagation();
+            if (!isCurrentAnswerChecked) verifyCurrentAnswer();
+            else goToNextPhrase();
           }
         });
       }
+
+      container.querySelectorAll('.contraction-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (!writingInput || isCurrentAnswerChecked) return;
+          playSound('click');
+          const txt = btn.dataset.insert + " ";
+          const start = writingInput.selectionStart || writingInput.value.length;
+          const end = writingInput.selectionEnd || writingInput.value.length;
+          const v = writingInput.value;
+          writingInput.value = v.substring(0, start) + txt + v.substring(end);
+          writingInput.focus();
+        });
+      });
 
     // MODE 5: LISTENING DICTATION (DICTÉE À L'OREILLE)
     } else if (mode === 'listening') {
       const wrapper = document.createElement('div');
       wrapper.className = "space-y-5 text-center py-2";
       wrapper.innerHTML = `
-        <div class="space-y-2">
-          <button id="playAudioDictationBtn" type="button" class="w-20 h-20 rounded-full bg-gradient-to-tr from-rose-500 to-amber-500 text-white flex items-center justify-center mx-auto shadow-xl hover:scale-105 active:scale-95 transition text-2xl font-bold">
-            🔊
+        <div class="flex items-center justify-center gap-4">
+          <button id="playAudioDictationBtn" type="button" class="px-5 py-3.5 rounded-2xl bg-gradient-to-tr from-rose-500 to-amber-500 text-white flex items-center gap-2 shadow-lg hover:scale-105 active:scale-95 transition text-sm font-bold">
+            <span>🔊 Écouter l'audio</span>
           </button>
-          <p class="text-xs font-bold text-slate-500">Clique pour écouter l'audio parlé</p>
+          <button id="playSlowDictationBtn" type="button" class="px-4 py-3.5 rounded-2xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 flex items-center gap-1.5 transition text-xs font-bold">
+            <span>🐢 Écouter lentement (0.75x)</span>
+          </button>
         </div>
 
         <div class="max-w-xl mx-auto">
@@ -1015,18 +1028,24 @@
         playBtn.addEventListener('click', () => speakEnglish(phrase.en));
       }
 
+      const slowBtn = document.getElementById('playSlowDictationBtn');
+      if (slowBtn) {
+        slowBtn.addEventListener('click', () => speakEnglish(phrase.en, 0.75));
+      }
+
       const dictInput = document.getElementById('dictationInput');
       if (dictInput) {
         setTimeout(() => dictInput.focus(), 60);
         dictInput.addEventListener('keydown', (e) => {
           if (e.key === 'Enter') {
             e.preventDefault();
-            verifyCurrentAnswer();
+            e.stopPropagation();
+            if (!isCurrentAnswerChecked) verifyCurrentAnswer();
+            else goToNextPhrase();
           }
         });
       }
 
-      // Auto-play audio once on load
       setTimeout(() => speakEnglish(phrase.en), 250);
 
     // MODE 6: VOICE SHADOWING & PRONUNCIATION
@@ -1075,6 +1094,62 @@
       if (micBtn && hasMic) {
         micBtn.addEventListener('click', () => handleVoiceRecording(phrase));
       }
+
+    // MODE 1 (DEFAULT & FALLBACK): FILL IN THE BLANK (MOT À TROU + OPTIONS RAPIDES CLIC/SAISIE)
+    } else {
+      const prefix = phrase.prefix !== undefined ? phrase.prefix : "";
+      const suffix = phrase.suffix !== undefined ? phrase.suffix : "";
+
+      const wrapper = document.createElement('div');
+      wrapper.className = "space-y-4";
+      wrapper.innerHTML = `
+        <div class="space-y-2">
+          <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Complète l'expression en anglais :</label>
+          <div class="p-4 sm:p-5 rounded-2xl bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 text-base sm:text-lg font-medium leading-relaxed flex flex-wrap items-center gap-2 shadow-sm">
+            <span>${prefix}</span>
+            <input type="text" id="clozeInput" autocomplete="off" placeholder="Tape ici..." class="px-3.5 py-1.5 rounded-xl border-2 border-rose-400 focus:border-rose-600 bg-rose-50/50 dark:bg-slate-800 text-slate-900 dark:text-white font-extrabold outline-none shadow-sm transition min-w-[150px] max-w-[320px]">
+            <span>${suffix}</span>
+          </div>
+        </div>
+
+        <!-- Quick 3 option chips for mobile / 1-click answers -->
+        <div class="space-y-1.5 pt-1">
+          <div class="text-[11px] font-bold text-slate-400 uppercase">Ou clique directement sur la bonne suggestion :</div>
+          <div class="flex flex-wrap gap-2" id="clozeOptionPills">
+            ${options.map(opt => `
+              <button type="button" class="cloze-opt-btn px-4 py-2 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-rose-500 bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 font-bold text-xs sm:text-sm shadow-sm transition transform active:scale-95" data-val="${opt.replace(/"/g, '&quot;')}">
+                ${opt}
+              </button>
+            `).join('')}
+          </div>
+        </div>
+      `;
+
+      container.appendChild(wrapper);
+
+      const input = document.getElementById('clozeInput');
+      if (input) {
+        setTimeout(() => input.focus(), 60);
+        input.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!isCurrentAnswerChecked) verifyCurrentAnswer();
+            else goToNextPhrase();
+          }
+        });
+      }
+
+      container.querySelectorAll('.cloze-opt-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (isCurrentAnswerChecked) return;
+          playSound('click');
+          if (input) {
+            input.value = btn.dataset.val;
+            verifyCurrentAnswer();
+          }
+        });
+      });
     }
   }
 
@@ -1125,7 +1200,7 @@
         }
       };
 
-      rec.onerror = (err) => {
+      rec.onerror = () => {
         if (transcriptText) transcriptText.textContent = "Micro non détecté. Réessaie !";
       };
 
@@ -1153,15 +1228,9 @@
 
     let isCorrect = false;
     let expectedSolution = phrase.en;
-    const mode = state.practiceMode || 'fill';
+    const mode = normalizePracticeMode(state.practiceMode);
 
-    if (mode === 'fill') {
-      const input = document.getElementById('clozeInput');
-      const val = cleanStr(input ? input.value : "");
-      const expected = cleanStr(phrase.target || "");
-      expectedSolution = phrase.target || phrase.en;
-      isCorrect = (val === expected) || (val.length > 3 && calculateSimilarity(val, expected) >= 0.9);
-    } else if (mode === 'qcm') {
+    if (mode === 'qcm') {
       const expected = cleanStr(phrase.target || "");
       expectedSolution = phrase.target || phrase.en;
       isCorrect = cleanStr(currentSelectedQCMOption || "") === expected;
@@ -1178,6 +1247,13 @@
       isCorrect = calculateSimilarity(val, cleanStr(phrase.en)) >= 0.85;
     } else if (mode === 'voice') {
       isCorrect = true;
+    } else {
+      // Default 'fill' mode
+      const input = document.getElementById('clozeInput');
+      const val = cleanStr(input ? input.value : "");
+      const expected = cleanStr(phrase.target || "");
+      expectedSolution = phrase.target || phrase.en;
+      isCorrect = (val === expected) || (val.length > 3 && calculateSimilarity(val, expected) >= 0.9);
     }
 
     isCurrentAnswerChecked = true;
@@ -1200,7 +1276,6 @@
       state.xp = (state.xp || 0) + 10;
       state.stepProgress[phrase.step].correct += 1;
 
-      // Check step completion
       if (!state.completedSteps.includes(phrase.step) && state.stepProgress[phrase.step].answered >= 6) {
         state.completedSteps.push(phrase.step);
         playSound('level');
@@ -1239,7 +1314,7 @@
             <span>Pas tout à fait ! Voici la formulation naturelle attendue :</span>
           </div>
           <div class="p-3 bg-white dark:bg-slate-900 rounded-xl font-bold text-base text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
-            ${expectedSolution}
+            ${expectedSolution} — "${phrase.en}"
           </div>
           <p class="text-xs text-slate-600 dark:text-slate-300">
             💡 <strong>Astuce :</strong> ${phrase.hint || phrase.note || "Mémorise bien cette expression pour la prochaine fois !"}
@@ -1249,14 +1324,46 @@
       }
     }
 
-    // Toggle Action Buttons
     if (verifyBtn) verifyBtn.classList.add('hidden');
-    if (nextBtn) {
-      nextBtn.classList.remove('hidden');
-      nextBtn.focus();
-    }
+    if (nextBtn) nextBtn.classList.remove('hidden');
 
     saveState();
+  }
+
+  function revealOrSkipPhrase() {
+    if (isCurrentAnswerChecked) {
+      goToNextPhrase();
+      return;
+    }
+    const phrase = currentSessionPhrases[currentPhraseIndex];
+    if (!phrase) return;
+
+    isCurrentAnswerChecked = true;
+    playSound('click');
+
+    const feedbackBox = document.getElementById('feedbackContainer');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    if (feedbackBox) {
+      feedbackBox.className = "p-5 rounded-2xl border border-amber-300 dark:border-amber-800 bg-amber-50/95 dark:bg-amber-950/40 text-amber-900 dark:text-amber-100 space-y-2 transition-all";
+      feedbackBox.innerHTML = `
+        <div class="flex items-center gap-2 font-bold text-sm text-amber-700 dark:text-amber-300">
+          <span>💡 Solution complète de la phrase :</span>
+        </div>
+        <div class="p-3 bg-white dark:bg-slate-900 rounded-xl font-bold text-base text-slate-900 dark:text-white border border-amber-200 dark:border-amber-800">
+          "${phrase.en}"
+        </div>
+        <p class="text-xs text-slate-600 dark:text-slate-300">
+          <strong>Explication :</strong> ${phrase.note || phrase.hint || "Formule idiomatique courante."}
+        </p>
+      `;
+      feedbackBox.classList.remove('hidden');
+    }
+
+    speakEnglish(phrase.en);
+    if (verifyBtn) verifyBtn.classList.add('hidden');
+    if (nextBtn) nextBtn.classList.remove('hidden');
   }
 
   function goToNextPhrase() {
@@ -1462,7 +1569,8 @@
 
     container.querySelectorAll('[data-practice-custom]').forEach(btn => {
       btn.addEventListener('click', () => {
-        selectStep('custom');
+        const idx = parseInt(btn.dataset.practiceCustom, 10);
+        selectStep('custom', list[idx] || null);
         switchTab('practice');
       });
     });
@@ -1483,12 +1591,11 @@
     const cleanEn = en.trim();
     const cleanFr = fr.trim();
 
-    // Determine target word/phrase
-    let target = (targetInput || '').trim();
+    // Determine target word/phrase without trailing punctuation
+    let target = (targetInput || '').trim().replace(/[.,!?;:]+$/, '');
     if (!target) {
-      // Pick first word or chunk
-      const words = cleanEn.split(/\s+/);
-      target = words.length > 2 ? words.slice(1, 3).join(' ') : words[0];
+      const words = cleanEn.split(/\s+/).map(w => w.replace(/[.,!?;:]+$/, '')).filter(Boolean);
+      target = words.length > 2 ? words.slice(1, 3).join(' ') : (words[0] || cleanEn);
     }
 
     const idx = cleanEn.toLowerCase().indexOf(target.toLowerCase());
@@ -1502,6 +1609,13 @@
       suffix = "";
     }
 
+    // Build realistic distractors from existing phrases
+    const sampleTargets = getAllPhrases()
+      .map(p => p.target)
+      .filter(t => t && t.toLowerCase() !== target.toLowerCase());
+    const distractors = sampleTargets.sort(() => Math.random() - 0.5).slice(0, 3);
+    while (distractors.length < 3) distractors.push("something else");
+
     const newPhrase = {
       id: `custom_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
       step: "custom",
@@ -1514,9 +1628,9 @@
       target,
       prefix,
       suffix,
-      hint: note || "Phrase personnelle ajoutée.",
-      note: note || "",
-      distractors: ["different phrase", "another expression"],
+      hint: note || `Indice : commence par "${target.substring(0, Math.min(2, target.length))}..." (${target.split(/\s+/).length} mot(s))`,
+      note: note || "Phrase personnelle ajoutée dans ton carnet.",
+      distractors,
       tiles: cleanEn.split(/\s+/).sort(() => Math.random() - 0.5)
     };
 
@@ -2006,8 +2120,17 @@
       quickRoadmapBtn.addEventListener('click', () => switchTab('roadmap'));
     }
 
-    // Practice Mode Buttons
+    // Practice Mode Buttons (sync initial state + click handlers)
     document.querySelectorAll('.practice-mode-btn').forEach(btn => {
+      const isInitialMode = btn.dataset.practiceMode === state.practiceMode;
+      if (isInitialMode) {
+        btn.classList.add('active', 'bg-rose-600', 'text-white', 'shadow-sm');
+        btn.classList.remove('bg-slate-100', 'dark:bg-slate-700', 'text-slate-700', 'dark:text-slate-300');
+      } else {
+        btn.classList.remove('active', 'bg-rose-600', 'text-white', 'shadow-sm');
+        btn.classList.add('bg-slate-100', 'dark:bg-slate-700', 'text-slate-700', 'dark:text-slate-300');
+      }
+
       btn.addEventListener('click', () => {
         playSound('click');
         document.querySelectorAll('.practice-mode-btn').forEach(b => {
@@ -2016,7 +2139,7 @@
         });
         btn.classList.add('active', 'bg-rose-600', 'text-white', 'shadow-sm');
         btn.classList.remove('bg-slate-100', 'dark:bg-slate-700', 'text-slate-700', 'dark:text-slate-300');
-        state.practiceMode = btn.dataset.practiceMode;
+        state.practiceMode = normalizePracticeMode(btn.dataset.practiceMode);
         saveState();
         renderCurrentPhrase();
       });
@@ -2053,7 +2176,7 @@
         const star = document.getElementById('bookmarkIcon');
         if (star) {
           const isFav = state.favorites.includes(p.id);
-          star.className = isFav ? "w-5 h-5 fill-amber-400 stroke-amber-400 text-amber-400" : "w-5 h-5";
+          star.textContent = isFav ? "⭐ Favori" : "☆ Favori";
         }
       });
     }
@@ -2065,7 +2188,7 @@
     if (nextBtn) nextBtn.addEventListener('click', goToNextPhrase);
 
     const skipBtn = document.getElementById('skipBtn');
-    if (skipBtn) skipBtn.addEventListener('click', goToNextPhrase);
+    if (skipBtn) skipBtn.addEventListener('click', revealOrSkipPhrase);
 
     const newBatchBtn = document.getElementById('newBatchBtn');
     if (newBatchBtn) {
@@ -2077,15 +2200,18 @@
 
     // Keyboard Shortcuts (Enter for Verify / Next)
     window.addEventListener('keydown', (e) => {
+      const tag = (e.target && e.target.tagName) ? e.target.tagName.toUpperCase() : '';
       if (e.key === 'Enter') {
+        if (['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(tag)) return;
         const practiceSection = document.getElementById('tab-practice');
         if (practiceSection && !practiceSection.classList.contains('hidden')) {
+          e.preventDefault();
           if (!isCurrentAnswerChecked) verifyCurrentAnswer();
           else goToNextPhrase();
         }
       } else if (e.code === 'Space') {
         const fcSection = document.getElementById('tab-flashcards');
-        if (fcSection && !fcSection.classList.contains('hidden') && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+        if (fcSection && !fcSection.classList.contains('hidden') && !['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(tag)) {
           e.preventDefault();
           flipFlashcard();
         }
@@ -2202,9 +2328,11 @@
           renderCustomPhrasesList();
           renderStepSelectors();
           playSound('success');
-          alert(`🎉 ${addedCount} phrase(s) importée(s) avec succès dans ton catalogue !`);
-        } else {
-          alert("Format attendu par ligne : Phrase en anglais = Traduction en français");
+          const toast = document.getElementById('customSavedToast');
+          if (toast) {
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 5000);
+          }
         }
       });
     }

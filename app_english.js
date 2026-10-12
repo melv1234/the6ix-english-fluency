@@ -225,14 +225,15 @@
     { id: "b_streak7", title: "Série d'Or : 7 Jours", icon: "🔥", desc: "Une semaine entière de pratique quotidienne", condition: s => s.streak >= 7 },
     { id: "b_streak14", title: "Discipline de Fer", icon: "⚔️", desc: "14 jours consécutifs sans faillir", condition: s => s.streak >= 14 },
     { id: "b_custom", title: "Autrice Passionnée", icon: "📝", desc: "Avoir ajouté au moins 3 phrases personnelles", condition: s => (s.customPhrases || []).length >= 3 },
-    { id: "b_stage1", title: "Maître du Quotidien", icon: "👋", desc: "Avoir pratiqué 5 étapes du Palier 1", condition: s => s.completedSteps.filter(x => x <= 10).length >= 5 },
-    { id: "b_stage2", title: "Fluidité Professionnelle B2", icon: "💼", desc: "Avoir terminé 5 étapes du Palier 2", condition: s => s.completedSteps.filter(x => x >= 11 && x <= 20).length >= 5 },
-    { id: "b_c1", title: "Éloquence & Nuance C1", icon: "🧠", desc: "Avoir pratiqué des phrases du Palier 3", condition: s => s.completedSteps.some(x => x >= 21) },
+    { id: "b_stage0", title: "Bases Solides A1-A2", icon: "🌱", desc: "Avoir pratiqué 5 étapes du Palier 1 (Bases 1-10)", condition: s => s.completedSteps.filter(x => x <= 10).length >= 5 },
+    { id: "b_stage1", title: "Maître du Quotidien", icon: "👋", desc: "Avoir pratiqué 5 étapes du Palier 2 (Étapes 11-20)", condition: s => s.completedSteps.filter(x => x >= 11 && x <= 20).length >= 5 },
+    { id: "b_stage2", title: "Fluidité Professionnelle B2", icon: "💼", desc: "Avoir terminé 5 étapes du Palier 3 (Étapes 21-30)", condition: s => s.completedSteps.filter(x => x >= 21 && x <= 30).length >= 5 },
+    { id: "b_c1", title: "Éloquence & Nuance C1", icon: "🧠", desc: "Avoir pratiqué des phrases du Palier 4 (Étapes 31-40)", condition: s => s.completedSteps.some(x => x >= 31) },
     { id: "b_master", title: "True Native Flow", icon: "👑", desc: "Atteindre 1 000 points d'XP", condition: s => s.xp >= 1000 }
   ];
 
   // 5. APPLICATION STATE & LOCALSTORAGE
-  const STORAGE_KEY = "toronto_english_master_state_v3";
+  const STORAGE_KEY = "toronto_english_master_state_v4";
   const VALID_PRACTICE_MODES = ["fill", "qcm", "tiles", "writing", "listening", "voice"];
   const LEGACY_MODE_MAP = {
     cloze: "fill",
@@ -251,14 +252,16 @@
 
   function loadState() {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem("toronto_english_master_state_v2") || localStorage.getItem("toronto_english_master_state_v1");
+      const savedV4 = localStorage.getItem(STORAGE_KEY);
+      const legacySaved = !savedV4 && (localStorage.getItem("toronto_english_master_state_v3") || localStorage.getItem("toronto_english_master_state_v2") || localStorage.getItem("toronto_english_master_state_v1"));
+      const saved = savedV4 || legacySaved;
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && typeof parsed === 'object') {
-          let stepFilter = String(parsed.currentStepFilter || "1");
+          let stepFilter = savedV4 ? String(parsed.currentStepFilter || "1") : "1";
           if (stepFilter !== "all" && stepFilter !== "custom") {
             const num = parseInt(stepFilter, 10);
-            if (isNaN(num) || num < 1 || num > 30) stepFilter = "1";
+            if (isNaN(num) || num < 1 || num > 40) stepFilter = "1";
           }
           return {
             xp: parsed.xp || 0,
@@ -266,8 +269,8 @@
             lastActiveDate: parsed.lastActiveDate || new Date().toISOString().slice(0, 10),
             answersCount: parsed.answersCount || 0,
             correctCount: parsed.correctCount || 0,
-            completedSteps: Array.isArray(parsed.completedSteps) ? parsed.completedSteps : [],
-            stepProgress: (parsed.stepProgress && typeof parsed.stepProgress === 'object') ? parsed.stepProgress : {},
+            completedSteps: savedV4 && Array.isArray(parsed.completedSteps) ? parsed.completedSteps : [],
+            stepProgress: (savedV4 && parsed.stepProgress && typeof parsed.stepProgress === 'object') ? parsed.stepProgress : {},
             favorites: Array.isArray(parsed.favorites) ? parsed.favorites : [],
             mistakes: Array.isArray(parsed.mistakes) ? parsed.mistakes : [],
             customPhrases: Array.isArray(parsed.customPhrases) ? parsed.customPhrases : [],
@@ -539,13 +542,14 @@
     // 1. Practice dropdown
     if (sel) {
       sel.innerHTML = `
-        <option value="all">🌐 Toutes les 30 étapes (Mélange complet)</option>
+        <option value="all">🌐 Toutes les 40 étapes (Mélange complet)</option>
         <option value="custom">⭐ Mes phrases personnalisées (${(state.customPhrases || []).length})</option>
       `;
       STEPS.forEach(s => {
         const opt = document.createElement('option');
         opt.value = String(s.step);
-        opt.textContent = `Étape ${s.step} : ${s.title} (${s.level})`;
+        const prefix = s.step <= 10 ? "🌱 " : "";
+        opt.textContent = `${prefix}Étape ${s.step} : ${s.title} (${s.level})`;
         sel.appendChild(opt);
       });
       sel.value = state.currentStepFilter || "1";
@@ -554,13 +558,14 @@
     // 2. Explorer dropdown
     if (expSel) {
       expSel.innerHTML = `
-        <option value="all">Toutes les étapes (1 à 30)</option>
+        <option value="all">Toutes les étapes (1 à 40)</option>
         <option value="custom">⭐ Mes phrases personnalisées (${(state.customPhrases || []).length})</option>
       `;
       STEPS.forEach(s => {
         const opt = document.createElement('option');
         opt.value = String(s.step);
-        opt.textContent = `Étape ${s.step} : ${s.title}`;
+        const prefix = s.step <= 10 ? "🌱 " : "";
+        opt.textContent = `${prefix}Étape ${s.step} : ${s.title}`;
         expSel.appendChild(opt);
       });
     }
@@ -568,13 +573,13 @@
     // 3. Flashcards dropdown
     if (fcSel) {
       fcSel.innerHTML = `
-        <option value="all">Toutes les étapes</option>
+        <option value="all">Toutes les étapes (1 à 40)</option>
         <option value="custom">⭐ Mes phrases (${(state.customPhrases || []).length})</option>
       `;
       STEPS.forEach(s => {
         const opt = document.createElement('option');
         opt.value = String(s.step);
-        opt.textContent = `Étape ${s.step}`;
+        opt.textContent = `${s.step <= 10 ? '🌱 ' : ''}Étape ${s.step} (${s.level})`;
         fcSel.appendChild(opt);
       });
     }
@@ -601,7 +606,7 @@
       customPill.addEventListener('click', () => selectStep('custom'));
       pillBar.appendChild(customPill);
 
-      // 1 to 30 pills
+      // 1 to 40 pills
       STEPS.forEach(s => {
         const isSelected = String(s.step) === String(state.currentStepFilter);
         const isCompleted = state.completedSteps.includes(s.step);
@@ -615,7 +620,8 @@
                 ? 'bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-700' 
                 : 'bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200')
         }`;
-        pill.innerHTML = `${isCompleted ? '✓ ' : ''}Étape ${s.step}`;
+        const iconPrefix = isCompleted ? '✓ ' : (s.step <= 10 ? '🌱 ' : '');
+        pill.innerHTML = `${iconPrefix}Étape ${s.step}`;
         pill.addEventListener('click', () => selectStep(String(s.step)));
         pillBar.appendChild(pill);
       });
@@ -1426,8 +1432,13 @@
           <button id="restartSessionBtn" type="button" class="px-6 py-3 rounded-2xl font-bold bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 text-white shadow-lg transition">
             🔄 Nouvelle série de 10
           </button>
+          ${(!isNaN(parseInt(state.currentStepFilter, 10)) && parseInt(state.currentStepFilter, 10) < 40) ? `
+            <button id="advanceNextStepBtn" type="button" class="px-6 py-3 rounded-2xl font-bold bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 text-white shadow-lg transition">
+              🚀 Passer à l'Étape ${parseInt(state.currentStepFilter, 10) + 1}
+            </button>
+          ` : ''}
           <button id="backToRoadmapBtn" type="button" class="px-5 py-3 rounded-2xl font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:text-white transition">
-            🗺️ Voir les 30 étapes
+            🗺️ Voir les 40 étapes
           </button>
         </div>
       </div>
@@ -1436,11 +1447,19 @@
     const restartBtn = document.getElementById('restartSessionBtn');
     if (restartBtn) restartBtn.addEventListener('click', () => startSession(state.currentStepFilter));
 
+    const advanceBtn = document.getElementById('advanceNextStepBtn');
+    if (advanceBtn) {
+      advanceBtn.addEventListener('click', () => {
+        const nextNum = parseInt(state.currentStepFilter, 10) + 1;
+        if (nextNum <= 40) selectStep(String(nextNum));
+      });
+    }
+
     const roadmapBtn = document.getElementById('backToRoadmapBtn');
     if (roadmapBtn) roadmapBtn.addEventListener('click', () => switchTab('roadmap'));
   }
 
-  // 14. ROADMAP GENERATOR (30 STEPS)
+  // 14. ROADMAP GENERATOR (40 STEPS ACROSS 4 PALIERS)
   function renderRoadmap(filterStage = "all") {
     const grid = document.getElementById('roadmapGrid');
     if (!grid) return;
@@ -1451,7 +1470,8 @@
 
     STEPS.forEach(st => {
       let stage = 1;
-      if (st.step >= 21) stage = 3;
+      if (st.step >= 31) stage = 4;
+      else if (st.step >= 21) stage = 3;
       else if (st.step >= 11) stage = 2;
 
       if (filterStage !== "all" && String(stage) !== String(filterStage)) {
@@ -1460,17 +1480,29 @@
 
       const isCompleted = state.completedSteps.includes(st.step);
       const stepProg = state.stepProgress[st.step] || { answered: 0, correct: 0 };
-      const phrasesInStep = allPhrases.filter(p => p.step === st.step).length || 75;
+      const phrasesInStep = allPhrases.filter(p => p.step === st.step).length || 80;
       const progressPercent = Math.min(100, Math.round((stepProg.answered / Math.max(1, phrasesInStep)) * 100));
 
       const card = document.createElement('div');
       card.setAttribute('data-start-step', st.step);
       card.className = `cursor-pointer bg-white dark:bg-slate-800 rounded-3xl border ${isCompleted ? 'border-emerald-500/50 dark:border-emerald-500/40 shadow-emerald-500/10' : 'border-slate-200 dark:border-slate-700/80'} p-6 shadow-sm hover:shadow-lg transition-all duration-200 flex flex-col justify-between group space-y-4`;
 
+      const badgeColorClass =
+        stage === 1 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/70 dark:text-emerald-300' :
+        stage === 2 ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300' :
+        stage === 3 ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300' :
+                      'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300';
+
+      const barGradientClass =
+        stage === 1 ? 'from-emerald-500 to-teal-600' :
+        stage === 2 ? 'from-rose-500 to-red-600' :
+        stage === 3 ? 'from-amber-500 to-orange-500' :
+                      'from-indigo-500 to-purple-600';
+
       card.innerHTML = `
         <div class="space-y-3">
           <div class="flex items-center justify-between">
-            <span class="text-xs font-black px-3 py-1 rounded-full ${stage === 1 ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300' : stage === 2 ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/70 dark:text-amber-300' : 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300'}">
+            <span class="text-xs font-black px-3 py-1 rounded-full ${badgeColorClass}">
               ${st.badge || `Étape ${st.step}`}
             </span>
             <span class="text-[11px] font-extrabold uppercase px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
@@ -1488,7 +1520,7 @@
           </div>
 
           <div class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-300">
-            <span class="font-bold text-rose-600 dark:text-rose-400">🍁 Vibe Toronto :</span> ${st.culture}
+            <span class="font-bold text-rose-600 dark:text-rose-400">${stage === 1 ? '🌱 Astuce Départ :' : '🍁 Vibe Toronto :'}</span> ${st.culture}
           </div>
         </div>
 
@@ -1499,7 +1531,7 @@
               <span>${progressPercent}%</span>
             </div>
             <div class="w-full bg-slate-100 dark:bg-slate-700 h-2 rounded-full overflow-hidden">
-              <div class="h-full bg-gradient-to-r ${stage === 1 ? 'from-rose-500 to-red-600' : stage === 2 ? 'from-amber-500 to-orange-500' : 'from-indigo-500 to-purple-600'}" style="width: ${progressPercent}%"></div>
+              <div class="h-full bg-gradient-to-r ${barGradientClass}" style="width: ${progressPercent}%"></div>
             </div>
           </div>
 

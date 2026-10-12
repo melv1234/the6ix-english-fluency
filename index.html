@@ -86,11 +86,11 @@
   <!-- ========================================================== -->
   <!-- TOP NAVIGATION HEADER                                       -->
   <!-- ========================================================== -->
-  <header class="bg-white/85 dark:bg-slate-800/85 backdrop-blur-md border-b border-slate-200 dark:border-slate-700/80 sticky top-0 z-40">
+  <header class="bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700/80 sticky top-0 z-40">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
       
       <!-- Brand & Subtitle -->
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3 cursor-pointer" id="brandHomeBtn">
         <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-600 via-red-500 to-amber-500 flex items-center justify-center text-white shadow-md shadow-rose-500/20 font-black text-xl">
           🍁
         </div>
@@ -104,7 +104,7 @@
             </span>
           </div>
           <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium hidden sm:block">
-            Programme d'anglais parlé en 30 étapes • Objectif 4-5 mois
+            Programme d'anglais parlé en 30 étapes • 2 260+ phrases
           </p>
         </div>
       </div>
@@ -114,34 +114,34 @@
         
         <!-- Daily Streak -->
         <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/50 text-orange-600 dark:text-orange-400 text-xs font-bold shadow-sm" title="Jours consécutifs d'entraînement">
-          <i data-lucide="flame" class="w-4 h-4 fill-orange-500 stroke-orange-500"></i>
+          <span>🔥</span>
           <span id="streakDisplay">1 jour</span>
         </div>
 
         <!-- Total XP -->
         <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/50 text-amber-600 dark:text-amber-400 text-xs font-bold shadow-sm" title="Points d'expérience cumulés">
-          <i data-lucide="sparkles" class="w-4 h-4 fill-amber-400 stroke-amber-500"></i>
+          <span>✨</span>
           <span id="xpDisplay">0 XP</span>
         </div>
 
         <!-- Level Indicator -->
         <div class="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/50 text-indigo-600 dark:text-indigo-400 text-xs font-bold shadow-sm">
-          <i data-lucide="award" class="w-4 h-4"></i>
+          <span>🏆</span>
           <span id="levelDisplay">Niveau 1 : Toronto Explorer</span>
         </div>
 
         <!-- Sound FX Toggle -->
-        <button id="toggleAudioBtn" class="p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition" title="Activer / Couper les sons de l'application">
+        <button id="toggleAudioBtn" type="button" class="p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition" title="Activer / Couper les sons de l'application">
           <i data-lucide="volume-2" id="soundIcon" class="w-5 h-5"></i>
         </button>
 
         <!-- Speech Speed Toggle -->
-        <button id="toggleSpeedBtn" class="px-2.5 py-1 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition" title="Vitesse de prononciation audio native">
+        <button id="toggleSpeedBtn" type="button" class="px-2.5 py-1 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition" title="Vitesse de prononciation audio native">
           🔊 <span id="speedLabel">1.0x</span>
         </button>
 
         <!-- Dark Mode Toggle -->
-        <button id="toggleDarkBtn" class="p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition" title="Thème clair / sombre">
+        <button id="toggleDarkBtn" type="button" class="p-2 rounded-xl text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-700/60 transition" title="Thème clair / sombre">
           <i data-lucide="moon" id="themeIcon" class="w-5 h-5"></i>
         </button>
       </div>
@@ -156,39 +156,39 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6">
       <div class="flex space-x-1 sm:space-x-2 overflow-x-auto custom-scrollbar py-2">
         
-        <button data-tab="roadmap" class="tab-btn active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 border-b-2 border-rose-500 text-rose-600 dark:text-rose-400 bg-rose-50/70 dark:bg-rose-950/30 whitespace-nowrap transition">
-          <i data-lucide="map" class="w-4 h-4 text-rose-500"></i>
+        <button data-tab="practice" type="button" class="tab-btn active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 border-b-2 border-rose-500 text-rose-600 dark:text-rose-400 bg-rose-50/70 dark:bg-rose-950/30 whitespace-nowrap transition">
+          <span>🎯</span>
+          <span>Exercices & Entraînement</span>
+        </button>
+
+        <button data-tab="roadmap" type="button" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 whitespace-nowrap transition">
+          <span>🗺️</span>
           <span>Parcours 30 Étapes</span>
         </button>
 
-        <button data-tab="practice" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 whitespace-nowrap transition">
-          <i data-lucide="target" class="w-4 h-4 text-amber-500"></i>
-          <span>Entraînement & Quiz</span>
+        <button data-tab="notebook" type="button" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 whitespace-nowrap transition">
+          <span>➕</span>
+          <span>Ajouter mes phrases</span>
         </button>
 
-        <button data-tab="flashcards" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 whitespace-nowrap transition">
-          <i data-lucide="zap" class="w-4 h-4 text-orange-500"></i>
+        <button data-tab="flashcards" type="button" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 whitespace-nowrap transition">
+          <span>⚡</span>
           <span>Flashcards & SRS</span>
         </button>
 
-        <button data-tab="dialogues" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 whitespace-nowrap transition">
-          <i data-lucide="coffee" class="w-4 h-4 text-emerald-500"></i>
+        <button data-tab="dialogues" type="button" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 whitespace-nowrap transition">
+          <span>☕</span>
           <span>Dialogues Toronto</span>
         </button>
 
-        <button data-tab="explorer" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 whitespace-nowrap transition">
-          <i data-lucide="search" class="w-4 h-4 text-cyan-500"></i>
-          <span>Explorateur (2 260+ phrases)</span>
+        <button data-tab="explorer" type="button" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 whitespace-nowrap transition">
+          <span>📚</span>
+          <span>Toutes les phrases (2 260+)</span>
         </button>
 
-        <button data-tab="notebook" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 whitespace-nowrap transition">
-          <i data-lucide="book-bookmark" class="w-4 h-4 text-indigo-500"></i>
-          <span>Mon Carnet</span>
-        </button>
-
-        <button data-tab="stats" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 whitespace-nowrap transition">
-          <i data-lucide="bar-chart-3" class="w-4 h-4 text-violet-500"></i>
-          <span>Plan 4-5 Mois & Badges</span>
+        <button data-tab="stats" type="button" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 whitespace-nowrap transition">
+          <span>📊</span>
+          <span>Progression & Badges</span>
         </button>
 
       </div>
@@ -198,12 +198,176 @@
   <!-- ========================================================== -->
   <!-- MAIN CONTAINER                                             -->
   <!-- ========================================================== -->
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-8">
 
     <!-- ========================================================== -->
-    <!-- TAB 1: ROADMAP (LE PARCOURS EN 30 ÉTAPES)                   -->
+    <!-- TAB 1: PRACTICE ARENA (EXERCICES & ENTRAÎNEMENT DIRECT)    -->
     <!-- ========================================================== -->
-    <section id="tab-roadmap" class="tab-pane active space-y-8">
+    <section id="tab-practice" class="tab-pane space-y-5">
+
+      <!-- QUICK STEP SELECTOR PILL BAR (1 TO 30 + CUSTOM) -->
+      <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-rose-600 dark:text-rose-400">📍 Choisir l'étape :</span>
+            <select id="practiceStepSelect" class="px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-xs sm:text-sm font-bold text-slate-800 dark:text-white outline-none focus:ring-2 focus:ring-rose-500">
+              <option value="all">🌐 Toutes les étapes (Mélange complet)</option>
+              <option value="custom">⭐ Mes phrases personnalisées</option>
+            </select>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button id="quickAddPhraseBtn" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-50 hover:bg-indigo-100 text-indigo-700 dark:bg-indigo-950/50 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 transition flex items-center gap-1">
+              <span>➕ Ajouter mes phrases</span>
+            </button>
+            <button id="openRoadmapQuickBtn" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-200 transition flex items-center gap-1">
+              <span>🗺️ Voir les 30 étapes</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Horizontal Quick-Click Step Pills (1 to 30) -->
+        <div id="quickStepPills" class="flex items-center gap-1.5 overflow-x-auto custom-scrollbar pb-1.5 pt-0.5">
+          <!-- Populated dynamically by JS -->
+        </div>
+
+        <!-- Exercise Mode Selector -->
+        <div class="pt-2 border-t border-slate-100 dark:border-slate-700/70 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400 mr-1">Type d'exercice :</span>
+            <button data-practice-mode="fill" type="button" class="practice-mode-btn active px-3.5 py-2 rounded-xl text-xs font-bold bg-rose-600 text-white shadow-sm transition flex items-center gap-1.5">
+              <span>🧩 Mot à trou + Choix</span>
+            </button>
+            <button data-practice-mode="qcm" type="button" class="practice-mode-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition flex items-center gap-1.5">
+              <span>🎯 QCM Express</span>
+            </button>
+            <button data-practice-mode="tiles" type="button" class="practice-mode-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition flex items-center gap-1.5">
+              <span>🔤 Construire la phrase</span>
+            </button>
+            <button data-practice-mode="writing" type="button" class="practice-mode-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition flex items-center gap-1.5">
+              <span>✍️ Traduction libre</span>
+            </button>
+            <button data-practice-mode="listening" type="button" class="practice-mode-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition flex items-center gap-1.5">
+              <span>🎧 Dictée audio</span>
+            </button>
+            <button data-practice-mode="voice" type="button" class="practice-mode-btn px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition flex items-center gap-1.5">
+              <span>🎙️ Prononciation</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SESSION PROGRESS BAR -->
+      <div class="space-y-1.5">
+        <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-semibold">
+          <span id="sessionProgressLabel">Phrase 1 sur 10</span>
+          <span id="sessionScoreLabel">Précision session : 100%</span>
+        </div>
+        <div class="w-full bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
+          <div id="sessionProgressBar" class="h-full bg-gradient-to-r from-amber-500 via-rose-500 to-emerald-500 w-0 transition-all duration-300"></div>
+        </div>
+      </div>
+
+      <!-- THE INTERACTIVE EXERCISE CARD -->
+      <div id="exerciseCard" class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden transition-all duration-300">
+        
+        <!-- ACTIVE QUESTION VIEW -->
+        <div id="exerciseQuestionView">
+          <!-- CARD HEADER -->
+          <div class="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-700/80 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800/90 dark:to-slate-800 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-2">
+              <span id="cardStepBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300">
+                👋 Étape 1 : Small Talk
+              </span>
+              <span id="cardLevelBadge" class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300 uppercase">
+                A2-B1
+              </span>
+              <span id="cardCategoryBadge" class="hidden sm:inline-block px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300">
+                Conversational Flow
+              </span>
+            </div>
+
+            <!-- Fast actions: Audio speak, Hint, Favorite bookmark -->
+            <div class="flex items-center gap-2">
+              <button id="pronounceCardBtn" type="button" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition shadow-sm" title="Écouter la prononciation native">
+                <span>🔊 Écouter l'anglais</span>
+              </button>
+              <button id="hintCardBtn" type="button" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition shadow-sm" title="Afficher un indice grammatical ou idiomatique">
+                <span>💡 Indice</span>
+              </button>
+              <button id="bookmarkCardBtn" type="button" class="p-2 rounded-xl text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition" title="Enregistrer dans mes favoris">
+                <i data-lucide="star" id="bookmarkIcon" class="w-5 h-5"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- CARD BODY -->
+          <div class="p-6 sm:p-8 space-y-6">
+
+            <!-- French prompt -->
+            <div class="space-y-1.5 bg-slate-50/80 dark:bg-slate-900/50 p-4 sm:p-5 rounded-2xl border border-slate-200/80 dark:border-slate-700/70">
+              <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-400">
+                <span>🇫🇷 Phrase à exprimer en anglais :</span>
+              </div>
+              <div id="frenchPromptText" class="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white leading-relaxed">
+                Salut, comment ça va pour toi aujourd'hui ?
+              </div>
+            </div>
+
+            <!-- Hint display area (collapsible) -->
+            <div id="hintBox" class="hidden p-4 rounded-2xl bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-xs sm:text-sm text-amber-900 dark:text-amber-200 flex items-start gap-3">
+              <span>💡</span>
+              <span id="hintText" class="font-medium">Pense à l'expression courante de salutation en anglais !</span>
+            </div>
+
+            <!-- INTERACTIVE EXERCISE ZONE: MODE SPECIFIC -->
+            <div id="interactiveZone" class="py-1 space-y-4">
+              <!-- Injected dynamically based on active mode -->
+            </div>
+
+            <!-- FEEDBACK NOTIFICATION CONTAINER -->
+            <div id="feedbackContainer" class="hidden p-5 rounded-2xl border transition-all duration-300">
+              <!-- Populated with Success or Correction details -->
+            </div>
+
+          </div>
+
+          <!-- CARD FOOTER / ACTION BUTTONS -->
+          <div class="p-5 sm:p-6 bg-slate-50 dark:bg-slate-800/90 border-t border-slate-200 dark:border-slate-700 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+              <button id="skipBtn" type="button" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/60 dark:hover:bg-slate-700/60 transition">
+                Passer / Voir la réponse
+              </button>
+              <button id="newBatchBtn" type="button" class="px-3.5 py-2.5 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition">
+                🔄 Tirer 10 autres phrases
+              </button>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <button id="verifyBtn" type="button" class="px-6 sm:px-8 py-3.5 rounded-2xl text-sm font-bold bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white shadow-lg shadow-rose-500/25 active:scale-95 transition flex items-center gap-2">
+                <span>✓ Vérifier ma réponse</span>
+              </button>
+
+              <button id="nextBtn" type="button" class="hidden px-6 sm:px-8 py-3.5 rounded-2xl text-sm font-bold bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-lg shadow-emerald-500/25 active:scale-95 transition flex items-center gap-2">
+                <span>Phrase suivante ➔</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SESSION COMPLETION VIEW (Hidden until 10 phrases completed) -->
+        <div id="sessionCompletionView" class="hidden p-8 sm:p-12 text-center space-y-6">
+          <!-- Populated dynamically without destroying exerciseQuestionView -->
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ========================================================== -->
+    <!-- TAB 2: ROADMAP (LE PARCOURS EN 30 ÉTAPES)                   -->
+    <!-- ========================================================== -->
+    <section id="tab-roadmap" class="tab-pane hidden space-y-8">
       
       <!-- HERO BANNER -->
       <div class="relative bg-gradient-to-r from-slate-900 via-rose-950 to-red-900 text-white rounded-3xl p-6 sm:p-10 shadow-2xl overflow-hidden border border-rose-900/30">
@@ -212,25 +376,19 @@
             🍁 Toronto Living ➔ Spoken Mastery
           </span>
           <h2 class="text-2xl sm:text-4xl font-extrabold tracking-tight font-heading leading-tight">
-            De Toronto à Bruxelles : Parlez un anglais fluide et naturel en 4 à 5 mois
+            De Toronto à Bruxelles : Programme Complet en 30 Étapes
           </h2>
           <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
-            Tu as vécu à Toronto, tu as respiré la ville, et maintenant tu as entre les mains le programme complet en <strong>30 étapes progressives</strong>. Chaque étape te propose plus de 70 phrases authentiques, des astuces d'intonation nord-américaine, et un entraînement quotidien pour ancrer des réflexes spontanés.
+            Clique sur n'importe quelle étape ci-dessous pour lancer immédiatement les exercices correspondants ou explorer toutes ses phrases.
           </p>
           <div class="pt-2 flex flex-wrap items-center gap-3">
-            <button id="heroResumeBtn" class="px-5 py-2.5 rounded-xl font-bold bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/30 transition flex items-center gap-2 text-sm">
-              <i data-lucide="play" class="w-4 h-4 fill-white"></i>
-              <span>Reprendre là où je me suis arrêtée</span>
+            <button id="heroResumeBtn" type="button" class="px-5 py-2.5 rounded-xl font-bold bg-rose-500 hover:bg-rose-600 text-white shadow-lg shadow-rose-500/30 transition flex items-center gap-2 text-sm">
+              <span>▶ Lancer une session d'entraînement</span>
             </button>
-            <button id="heroExploreAllBtn" class="px-4 py-2.5 rounded-xl font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition text-sm flex items-center gap-2">
-              <i data-lucide="shuffle" class="w-4 h-4"></i>
-              <span>Session mixte aléatoire</span>
+            <button id="heroExploreAllBtn" type="button" class="px-4 py-2.5 rounded-xl font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/20 transition text-sm flex items-center gap-2">
+              <span>🔀 Mélange aléatoire (toutes étapes)</span>
             </button>
           </div>
-        </div>
-
-        <div class="absolute -right-12 -bottom-12 opacity-10 text-white pointer-events-none hidden md:block">
-          <i data-lucide="compass" class="w-80 h-80"></i>
         </div>
       </div>
 
@@ -238,10 +396,10 @@
       <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
         <div class="flex flex-wrap items-center gap-2">
           <span class="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mr-1">Palier :</span>
-          <button data-stage-filter="all" class="stage-filter-btn active px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition">Toutes les 30 Étapes</button>
-          <button data-stage-filter="1" class="stage-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition">Palier 1 : Réflexes & Quotidien (1-10)</button>
-          <button data-stage-filter="2" class="stage-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition">Palier 2 : Phrasal Verbs & Flow B2 (11-20)</button>
-          <button data-stage-filter="3" class="stage-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition">Palier 3 : Nuance, Wit & C1 Fluency (21-30)</button>
+          <button data-stage-filter="all" type="button" class="stage-filter-btn active px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-900 text-white dark:bg-white dark:text-slate-900 transition">Toutes les 30 Étapes</button>
+          <button data-stage-filter="1" type="button" class="stage-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition">Palier 1 : Quotidien (1-10)</button>
+          <button data-stage-filter="2" type="button" class="stage-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition">Palier 2 : Phrasal Verbs & B2 (11-20)</button>
+          <button data-stage-filter="3" type="button" class="stage-filter-btn px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 transition">Palier 3 : Nuance & C1 (21-30)</button>
         </div>
         <div class="text-xs text-slate-500 font-semibold text-right">
           <span id="completedStepsCount">0</span> / 30 étapes maîtrisées
@@ -256,141 +414,112 @@
     </section>
 
     <!-- ========================================================== -->
-    <!-- TAB 2: PRACTICE ARENA (ENTRAÎNEMENT & QUIZ)                 -->
+    <!-- TAB 3: NOTEBOOK (AJOUTER MES PHRASES PERSONNELLES)          -->
     <!-- ========================================================== -->
-    <section id="tab-practice" class="tab-pane hidden space-y-6">
+    <section id="tab-notebook" class="tab-pane hidden space-y-6">
 
-      <!-- FILTER & SETTINGS BAR -->
-      <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
-        
-        <!-- Step Selector -->
-        <div class="flex items-center gap-2">
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-400 shrink-0">Étape active :</span>
-          <select id="practiceStepSelect" class="w-full sm:w-auto px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/60 text-xs sm:text-sm font-semibold outline-none focus:ring-2 focus:ring-rose-500">
-            <option value="all">🌐 Toutes les étapes (Mélange complet)</option>
-            <!-- Injected dynamically -->
-          </select>
+      <div class="bg-gradient-to-r from-indigo-600 to-purple-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="space-y-1 max-w-2xl">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/20 mb-1">
+            ➕ Catalogue Personnalisé
+          </span>
+          <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight font-heading">Ajouter mes propres phrases</h2>
+          <p class="text-sm text-indigo-100">
+            Ajoute ici toutes les expressions, phrases ou mots que tu souhaites pratiquer. Dès qu'une phrase est ajoutée, tu peux t'entraîner dessus immédiatement !
+          </p>
         </div>
-
-        <!-- Exercise Mode Selector -->
-        <div class="flex flex-wrap items-center gap-1.5">
-          <span class="text-xs font-bold uppercase tracking-wider text-slate-400 mr-1 shrink-0">Mode :</span>
-          <button data-practice-mode="tiles" class="practice-mode-btn active px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-600 text-white transition flex items-center gap-1.5">
-            <span>🔤 Mots mélangés</span>
-          </button>
-          <button data-practice-mode="fill" class="practice-mode-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition flex items-center gap-1.5">
-            <span>🧩 Mot à trou</span>
-          </button>
-          <button data-practice-mode="voice" class="practice-mode-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition flex items-center gap-1.5">
-            <span>🎙️ Shadowing & Micro</span>
-          </button>
-          <button data-practice-mode="listening" class="practice-mode-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition flex items-center gap-1.5">
-            <span>🎧 Dictée à l'oreille</span>
-          </button>
-        </div>
-
+        <button id="practiceMyPhrasesBtn" type="button" class="px-5 py-3 rounded-2xl font-extrabold bg-white text-indigo-700 hover:bg-indigo-50 shadow-lg transition shrink-0 text-sm flex items-center gap-2">
+          <span>🎯 S'entraîner sur mes phrases</span>
+        </button>
       </div>
 
-      <!-- SESSION PROGRESS BAR -->
-      <div class="space-y-1.5">
-        <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-semibold">
-          <span id="sessionProgressLabel">Exercice 1 sur 10</span>
-          <span id="sessionScoreLabel">Précision session : 100%</span>
-        </div>
-        <div class="w-full bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden">
-          <div id="sessionProgressBar" class="h-full bg-gradient-to-r from-amber-500 via-rose-500 to-emerald-500 w-0 transition-all duration-300"></div>
-        </div>
+      <!-- Confirmation Banner (Hidden by default) -->
+      <div id="customSavedToast" class="hidden p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 border-2 border-emerald-400 text-emerald-900 dark:text-emerald-100 font-bold text-sm flex items-center justify-between gap-3 shadow-md">
+        <span>✅ Ta phrase a bien été ajoutée ! Elle est prête pour tes exercices.</span>
+        <button id="toastPracticeNowBtn" type="button" class="px-3.5 py-1.5 rounded-xl bg-emerald-600 text-white text-xs font-extrabold hover:bg-emerald-700 transition">
+          Tester maintenant ➔
+        </button>
       </div>
 
-      <!-- THE INTERACTIVE EXERCISE CARD -->
-      <div id="exerciseCard" class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-xl overflow-hidden transition-all duration-300">
-        
-        <!-- CARD HEADER -->
-        <div class="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-700/80 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800/90 dark:to-slate-800 flex flex-wrap items-center justify-between gap-3">
-          <div class="flex flex-wrap items-center gap-2">
-            <span id="cardStepBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300">
-              👋 Étape 1 : Small Talk
-            </span>
-            <span id="cardLevelBadge" class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-indigo-100 text-indigo-800 dark:bg-indigo-950/70 dark:text-indigo-300 uppercase">
-              A2-B1
-            </span>
-            <span id="cardCategoryBadge" class="hidden sm:inline-block px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300">
-              Conversational Flow
-            </span>
-          </div>
+      <!-- Add Single Phrase Form -->
+      <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 p-6 sm:p-8 shadow-sm space-y-5">
+        <h3 class="text-lg font-bold text-slate-900 dark:text-white font-heading">1. Créer une nouvelle carte d'exercice</h3>
 
-          <!-- Fast actions: Audio speak, Hint, Favorite bookmark -->
-          <div class="flex items-center gap-2">
-            <button id="pronounceCardBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/60 transition" title="Écouter la prononciation native">
-              <i data-lucide="volume-2" class="w-4 h-4"></i>
-              <span>Écouter</span>
-            </button>
-            <button id="hintCardBtn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 hover:bg-amber-100 dark:hover:bg-amber-900/60 transition" title="Afficher un indice grammatical ou idiomatique">
-              <i data-lucide="lightbulb" class="w-4 h-4"></i>
-              <span>Indice</span>
-            </button>
-            <button id="bookmarkCardBtn" class="p-2 rounded-xl text-slate-400 hover:text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/30 transition" title="Enregistrer dans mes favoris">
-              <i data-lucide="star" id="bookmarkIcon" class="w-4 h-4"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- CARD BODY -->
-        <div class="p-6 sm:p-8 space-y-6">
-
-          <!-- French prompt -->
-          <div class="space-y-1">
-            <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-              <span>🇫🇷 En français :</span>
+        <form id="customPhraseForm" class="space-y-4">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-300 mb-1.5">🇫🇷 Phrase en Français *</label>
+              <input type="text" id="customFr" placeholder="Ex: Peux-tu m'ouvrir la porte de l'immeuble ?" required class="w-full px-4 py-3 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm font-semibold outline-none focus:border-indigo-500">
             </div>
-            <div id="frenchPromptText" class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white leading-relaxed">
-              Salut, comment ça va pour toi aujourd'hui ?
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-600 dark:text-slate-300 mb-1.5">🇨🇦 Phrase en Anglais *</label>
+              <input type="text" id="customEn" placeholder="Ex: Could you buzz me up to your apartment?" required class="w-full px-4 py-3 rounded-xl border-2 border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm font-bold outline-none focus:border-indigo-500">
             </div>
           </div>
 
-          <!-- Hint display area (collapsible) -->
-          <div id="hintBox" class="hidden p-4 rounded-2xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-xs sm:text-sm text-amber-900 dark:text-amber-200 flex items-start gap-3">
-            <i data-lucide="info" class="w-4 h-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0"></i>
-            <span id="hintText">Pense à l'expression courante de salutation en anglais !</span>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Mot ou expression à deviner (optionnel)</label>
+              <input type="text" id="customTarget" placeholder="Ex: buzz me up (auto si laissé vide)" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm outline-none focus:border-indigo-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Étape ou Thème (optionnel)</label>
+              <input type="text" id="customCategory" placeholder="Ex: Vie quotidienne / Slang" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm outline-none focus:border-indigo-500">
+            </div>
+            <div>
+              <label class="block text-xs font-bold uppercase text-slate-400 mb-1">Astuce ou Note (optionnel)</label>
+              <input type="text" id="customNote" placeholder="Ex: Très utilisé dans les condos à Toronto" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm outline-none focus:border-indigo-500">
+            </div>
           </div>
 
-          <!-- INTERACTIVE EXERCISE ZONE: MODE SPECIFIC -->
-          <div id="interactiveZone" class="py-2 space-y-4">
-            <!-- Injected dynamically based on active mode (tiles / fill / voice / listening) -->
+          <div class="flex justify-end pt-2">
+            <button type="submit" class="px-6 py-3 rounded-2xl font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20 transition flex items-center gap-2 text-sm">
+              <span>➕ Enregistrer cette phrase dans mes exercices</span>
+            </button>
           </div>
+        </form>
+      </div>
 
-          <!-- FEEDBACK NOTIFICATION CONTAINER -->
-          <div id="feedbackContainer" class="hidden p-5 rounded-2xl border transition-all duration-300">
-            <!-- Populated with Success or Correction details -->
+      <!-- Bulk Add (Paste multiple lines) -->
+      <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 p-6 sm:p-8 shadow-sm space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-bold text-slate-900 dark:text-white font-heading">2. Ajout rapide en liste (Copier-Coller plusieurs phrases d'un coup)</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Colle une phrase par ligne au format : <code>Phrase en anglais = Traduction en français</code> (ou séparé par <code>|</code> ou <code>-</code>)</p>
           </div>
-
         </div>
-
-        <!-- CARD FOOTER / ACTION BUTTONS -->
-        <div class="p-5 sm:p-6 bg-slate-50 dark:bg-slate-800/90 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between gap-4">
-          <button id="skipBtn" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200 hover:bg-slate-200/50 dark:hover:bg-slate-700/50 transition">
-            Passer la phrase
+        <textarea id="bulkPhrasesInput" rows="4" placeholder="Could you buzz me up? = Peux-tu m'ouvrir avec l'interphone ?&#10;Let's grab a double-double = Allons prendre un café deux crèmes deux sucres&#10;I'm heading downtown = Je vais au centre-ville" class="w-full p-3.5 rounded-2xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-xs sm:text-sm font-mono outline-none focus:border-indigo-500"></textarea>
+        <div class="flex justify-end">
+          <button id="bulkAddBtn" type="button" class="px-5 py-2.5 rounded-xl font-bold bg-slate-900 hover:bg-indigo-600 text-white dark:bg-slate-700 dark:hover:bg-indigo-600 text-xs sm:text-sm transition">
+            📥 Importer toutes ces phrases
           </button>
+        </div>
+      </div>
 
-          <div class="flex items-center gap-3">
-            <button id="verifyBtn" class="px-6 sm:px-8 py-3 rounded-2xl text-sm font-bold bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white shadow-lg shadow-rose-500/25 active:scale-95 transition flex items-center gap-2">
-              <i data-lucide="check-circle" class="w-4 h-4"></i>
-              <span>Vérifier ma réponse</span>
+      <!-- Notebook phrases list & Data backup -->
+      <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 p-6 sm:p-8 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h3 class="text-base font-bold text-slate-900 dark:text-white font-heading">Mes Phrases Enregistrées (<span id="notebookCount">0</span>)</h3>
+          <div class="flex flex-wrap items-center gap-2 text-xs">
+            <button id="exportDataBtn" type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 transition flex items-center gap-1">
+              <span>💾 Exporter mes données</span>
             </button>
-
-            <button id="nextBtn" class="hidden px-6 sm:px-8 py-3 rounded-2xl text-sm font-bold bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-lg shadow-emerald-500/25 active:scale-95 transition flex items-center gap-2">
-              <span>Phrase suivante</span>
-              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            <button id="importDataBtn" type="button" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 transition flex items-center gap-1">
+              <span>📂 Importer</span>
             </button>
+            <input type="file" id="importFileInput" class="hidden" accept=".json">
           </div>
         </div>
 
+        <div id="notebookListContainer" class="space-y-3">
+          <p class="text-xs text-slate-400 italic">Aucune phrase personnalisée pour l'instant. Ajoute ta première phrase ci-dessus !</p>
+        </div>
       </div>
 
     </section>
 
     <!-- ========================================================== -->
-    <!-- TAB 3: FLASHCARDS & SRS (RÉPÉTITION ESPACÉE)                -->
+    <!-- TAB 4: FLASHCARDS & SRS (RÉPÉTITION ESPACÉE)                -->
     <!-- ========================================================== -->
     <section id="tab-flashcards" class="tab-pane hidden space-y-6">
 
@@ -404,15 +533,18 @@
             Active le rappel spontané ! Tente de formuler la phrase en anglais dans ta tête ou à voix haute, puis retourne la carte pour vérifier ton automatisme.
           </p>
         </div>
-        <div class="absolute -right-8 -bottom-8 opacity-15 text-white">
-          <i data-lucide="zap" class="w-48 h-48"></i>
-        </div>
       </div>
 
-      <!-- Flashcards Stats Bar -->
-      <div class="flex items-center justify-between text-xs text-slate-500 max-w-xl mx-auto px-2">
-        <span id="flashcardDeckCount">Boîte de révision : 0 carte</span>
-        <span id="flashcardStreak">🔥 Série active : 0</span>
+      <!-- Flashcards Filter & Stats Bar -->
+      <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 max-w-xl mx-auto px-2">
+        <div class="flex items-center gap-2">
+          <span class="font-bold">Étape :</span>
+          <select id="flashcardStepSelect" class="px-2.5 py-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-200">
+            <option value="all">Toutes les étapes</option>
+            <option value="custom">⭐ Mes phrases</option>
+          </select>
+        </div>
+        <span id="flashcardDeckCount">Carte 1 sur 2261</span>
       </div>
 
       <!-- 3D FLIP CARD CONTAINER -->
@@ -436,8 +568,7 @@
             </div>
 
             <div class="text-xs font-semibold text-rose-500 dark:text-rose-400 flex items-center justify-center gap-1.5">
-              <i data-lucide="rotate-cw" class="w-4 h-4"></i>
-              <span>Clique pour retourner la carte (ou barre Espace)</span>
+              <span>🔄 Clique pour retourner la carte (ou barre Espace)</span>
             </div>
           </div>
 
@@ -447,8 +578,8 @@
               <span id="fcBackLevelBadge" class="text-xs font-bold px-3 py-1 rounded-full bg-indigo-900/60 text-indigo-300">
                 A2-B1
               </span>
-              <button id="fcSpeakBtn" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition" title="Écouter la prononciation">
-                <i data-lucide="volume-2" class="w-4 h-4"></i>
+              <button id="fcSpeakBtn" type="button" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition" title="Écouter la prononciation">
+                🔊 Écouter
               </button>
             </div>
 
@@ -472,15 +603,15 @@
 
       <!-- SRS RATING CONTROLS -->
       <div class="flex items-center justify-center gap-3 max-w-md mx-auto pt-2">
-        <button id="srsHardBtn" class="flex-1 py-3 px-4 rounded-2xl font-bold text-xs sm:text-sm bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 hover:bg-rose-100 transition shadow-sm flex flex-col items-center">
+        <button id="srsHardBtn" type="button" class="flex-1 py-3 px-4 rounded-2xl font-bold text-xs sm:text-sm bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 hover:bg-rose-100 transition shadow-sm flex flex-col items-center">
           <span>🔴 Difficile</span>
-          <span class="text-[10px] font-normal text-rose-500">Revoir bientôt</span>
+          <span class="text-[10px] font-normal text-rose-500">À revoir bientôt</span>
         </button>
-        <button id="srsGoodBtn" class="flex-1 py-3 px-4 rounded-2xl font-bold text-xs sm:text-sm bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 transition shadow-sm flex flex-col items-center">
-          <span>🟡 Pas mal</span>
-          <span class="text-[10px] font-normal text-amber-500">En cours</span>
+        <button id="srsGoodBtn" type="button" class="flex-1 py-3 px-4 rounded-2xl font-bold text-xs sm:text-sm bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800 hover:bg-amber-100 transition shadow-sm flex flex-col items-center">
+          <span>🟡 Correct</span>
+          <span class="text-[10px] font-normal text-amber-500">En bonne voie</span>
         </button>
-        <button id="srsEasyBtn" class="flex-1 py-3 px-4 rounded-2xl font-bold text-xs sm:text-sm bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition shadow-sm flex flex-col items-center">
+        <button id="srsEasyBtn" type="button" class="flex-1 py-3 px-4 rounded-2xl font-bold text-xs sm:text-sm bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition shadow-sm flex flex-col items-center">
           <span>🟢 Maîtrisé !</span>
           <span class="text-[10px] font-normal text-emerald-500">Acquis (+10 XP)</span>
         </button>
@@ -489,7 +620,7 @@
     </section>
 
     <!-- ========================================================== -->
-    <!-- TAB 4: DIALOGUES & SCENARIOS TORONTO                        -->
+    <!-- TAB 5: DIALOGUES & SCENARIOS TORONTO                        -->
     <!-- ========================================================== -->
     <section id="tab-dialogues" class="tab-pane hidden space-y-6">
 
@@ -502,9 +633,6 @@
           <p class="text-sm text-emerald-100">
             Entraîne-toi sur les 8 scènes indispensables de la vie torontoise : commande au café, métro TTC, afterwork sur Queen West, réunion de travail ou road trip vers Muskoka.
           </p>
-        </div>
-        <div class="absolute -right-8 -bottom-8 opacity-15 text-white">
-          <i data-lucide="coffee" class="w-48 h-48"></i>
         </div>
       </div>
 
@@ -521,7 +649,7 @@
     </section>
 
     <!-- ========================================================== -->
-    <!-- TAB 5: MASTER EXPLORER (2 260+ PHRASES)                     -->
+    <!-- TAB 6: MASTER EXPLORER (2 260+ PHRASES)                     -->
     <!-- ========================================================== -->
     <section id="tab-explorer" class="tab-pane hidden space-y-6">
 
@@ -532,7 +660,7 @@
           </span>
           <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 font-heading">Explorateur des 2 260+ Phrases</h2>
           <p class="text-sm text-cyan-100">
-            Recherche n'importe quel mot en anglais ou en français, filtre par étape ou consulte tes phrases favorites. Chaque phrase s'écoute en un clic !
+            Recherche n'importe quel mot en anglais ou en français, filtre par étape (1 à 30) et lance un entraînement sur l'étape de ton choix !
           </p>
         </div>
       </div>
@@ -542,27 +670,31 @@
         
         <!-- Search input -->
         <div class="relative">
-          <i data-lucide="search" class="w-5 h-5 absolute left-3.5 top-3.5 text-slate-400"></i>
-          <input type="text" id="explorerSearchInput" placeholder="Rechercher une phrase, un verbe, un mot clé en anglais ou en français..." class="w-full pl-11 pr-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/60 text-sm font-medium outline-none focus:ring-2 focus:ring-cyan-500">
+          <input type="text" id="explorerSearchInput" placeholder="🔍 Rechercher une phrase, un verbe, un mot clé en anglais ou en français..." class="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700/60 text-sm font-medium outline-none focus:ring-2 focus:ring-cyan-500">
         </div>
 
         <!-- Filter bar -->
         <div class="flex flex-wrap items-center justify-between gap-3 text-xs">
           <div class="flex flex-wrap items-center gap-2">
-            <select id="explorerStepFilter" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold outline-none">
+            <select id="explorerStepFilter" class="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold outline-none">
               <option value="all">Toutes les étapes (1 à 30)</option>
+              <option value="custom">⭐ Mes phrases personnalisées</option>
               <!-- Populated by JS -->
             </select>
 
-            <select id="explorerLevelFilter" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold outline-none">
+            <select id="explorerLevelFilter" class="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold outline-none">
               <option value="all">Tous les niveaux (A2-B1, B2, C1)</option>
               <option value="A2-B1">Niveau A2-B1</option>
               <option value="B2">Niveau B2</option>
               <option value="C1">Niveau C1</option>
             </select>
 
-            <button id="explorerOnlyFavsBtn" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold hover:border-amber-400 transition flex items-center gap-1.5">
+            <button id="explorerOnlyFavsBtn" type="button" class="px-3 py-2 rounded-lg border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold hover:border-amber-400 transition flex items-center gap-1.5">
               <span>⭐ Seulement mes favoris</span>
+            </button>
+
+            <button id="practiceExplorerSelectionBtn" type="button" class="px-3.5 py-2 rounded-lg bg-rose-600 hover:bg-rose-700 text-white font-bold transition">
+              🎯 S'entraîner sur cette sélection
             </button>
           </div>
 
@@ -581,82 +713,6 @@
       <!-- Pagination Controls -->
       <div class="flex items-center justify-center gap-2 pt-4" id="explorerPagination">
         <!-- Injected by JS -->
-      </div>
-
-    </section>
-
-    <!-- ========================================================== -->
-    <!-- TAB 6: NOTEBOOK (MON CARNET PERSONNEL)                      -->
-    <!-- ========================================================== -->
-    <section id="tab-notebook" class="tab-pane hidden space-y-6">
-
-      <div class="bg-gradient-to-r from-indigo-600 to-purple-700 rounded-3xl p-6 sm:p-8 text-white shadow-xl">
-        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2 font-heading">Mon Carnet Personnel</h2>
-        <p class="text-sm text-indigo-100 max-w-2xl">
-          Tu as entendu une réplique sympa dans une série ou un podcast, ou tu te souviens d'une phrase vécue à Toronto ? Ajoute-la ici pour qu'elle rejoigne automatiquement tes séances d'entraînement !
-        </p>
-      </div>
-
-      <!-- Add Phrase Form -->
-      <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 p-6 sm:p-8 shadow-sm space-y-5">
-        <h3 class="text-lg font-bold text-slate-900 dark:text-white font-heading">Ajouter une nouvelle phrase personnalisée</h3>
-
-        <form id="customPhraseForm" class="space-y-4">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Phrase en Anglais</label>
-              <input type="text" id="customEn" placeholder="Ex: Could you buzz me up to your apartment?" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm font-semibold outline-none focus:ring-2 focus:ring-indigo-500">
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Traduction en Français</label>
-              <input type="text" id="customFr" placeholder="Ex: Peux-tu m'ouvrir la porte de l'immeuble avec l'interphone ?" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Mot clé / Cible pour le trou</label>
-              <input type="text" id="customTarget" placeholder="Ex: buzz me up" required class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm font-bold outline-none focus:ring-2 focus:ring-indigo-500">
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Catégorie</label>
-              <input type="text" id="customCategory" placeholder="Ex: Daily Life / Slang" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-            </div>
-            <div>
-              <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Note personnelle ou astuce</label>
-              <input type="text" id="customNote" placeholder="Ex: Entendu dans un café sur Bloor" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-sm outline-none focus:ring-2 focus:ring-indigo-500">
-            </div>
-          </div>
-
-          <div class="flex justify-end pt-2">
-            <button type="submit" class="px-6 py-2.5 rounded-xl font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md transition flex items-center gap-2">
-              <i data-lucide="plus" class="w-4 h-4"></i>
-              <span>Enregistrer dans mon carnet</span>
-            </button>
-          </div>
-        </form>
-      </div>
-
-      <!-- Notebook phrases list & Data backup -->
-      <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 p-6 sm:p-8 shadow-sm space-y-4">
-        <div class="flex flex-wrap items-center justify-between gap-3">
-          <h3 class="text-base font-bold text-slate-900 dark:text-white font-heading">Mes Phrases Personnalisées (<span id="notebookCount">0</span>)</h3>
-          <div class="flex items-center gap-2 text-xs">
-            <button id="exportDataBtn" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 transition flex items-center gap-1">
-              <i data-lucide="download" class="w-3.5 h-3.5"></i>
-              <span>Exporter mes données</span>
-            </button>
-            <button id="importDataBtn" class="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-100 transition flex items-center gap-1">
-              <i data-lucide="upload" class="w-3.5 h-3.5"></i>
-              <span>Importer</span>
-            </button>
-            <input type="file" id="importFileInput" class="hidden" accept=".json">
-          </div>
-        </div>
-
-        <div id="notebookListContainer" class="space-y-3">
-          <p class="text-xs text-slate-400 italic">Aucune phrase personnalisée pour l'instant. Ajoute ta première note ci-dessus !</p>
-        </div>
       </div>
 
     </section>
@@ -700,7 +756,6 @@
         </h3>
 
         <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-          
           <div class="p-4 rounded-2xl bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/40 space-y-2">
             <span class="text-[11px] font-extrabold uppercase px-2 py-0.5 rounded bg-rose-200 dark:bg-rose-900 text-rose-800 dark:text-rose-200">Mois 1</span>
             <h4 class="font-bold text-sm text-slate-900 dark:text-white">Étapes 1 à 6</h4>
@@ -735,7 +790,6 @@
             <p class="text-xs text-slate-600 dark:text-slate-300">Storytelling, humour, sarcasme et pensée directe en anglais sans traduction.</p>
             <div class="text-[11px] font-semibold text-emerald-600">Objectif : 2 260+ phrases (C1)</div>
           </div>
-
         </div>
       </div>
 
@@ -749,7 +803,7 @@
 
       <!-- Reset data action -->
       <div class="flex justify-end pt-4">
-        <button id="resetProgressBtn" class="text-xs text-slate-400 hover:text-rose-600 transition underline">
+        <button id="resetProgressBtn" type="button" class="text-xs text-slate-400 hover:text-rose-600 transition underline">
           Réinitialiser toutes mes statistiques
         </button>
       </div>
@@ -763,7 +817,7 @@
   <!-- ========================================================== -->
   <footer class="mt-auto py-6 border-t border-slate-200 dark:border-slate-800 text-center text-xs text-slate-400">
     <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-      <p>🍁 The 6ix to Fluency — Conçu avec amour pour entretenir et perfectionner l'anglais de Toronto vers la Belgique</p>
+      <p>🍁 The 6ix to Fluency — Programme intensif d'anglais parlé (Étapes 1 à 30)</p>
       <p class="text-[11px] text-slate-400">Raccourcis clavier : <kbd class="px-1.5 py-0.5 bg-slate-200 dark:bg-slate-700 rounded font-mono">Entrée</kbd> pour valider / passer</p>
     </div>
   </footer>

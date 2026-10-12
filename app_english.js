@@ -2063,6 +2063,8 @@
       if (currentSessionPhrases.length === 0) startSession(state.currentStepFilter);
     } else if (tabId === 'roadmap') {
       renderRoadmap();
+    } else if (tabId === 'tenses') {
+      initTensesTab();
     } else if (tabId === 'notebook') {
       renderCustomPhrasesList();
     } else if (tabId === 'flashcards') {
@@ -2078,6 +2080,728 @@
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
     safeCreateIcons();
+  }
+
+  // ==========================================================
+  // 20B. VERB TENSES & CONJUGAISON TRAINER ENGINE
+  // ==========================================================
+  const TENSE_META = {
+    all: {
+      icon: "🌟",
+      title: "Mémo Grammatical : Tous les temps (Repérer les indices)",
+      markers: "Indices : yesterday (passé) • right now (continu) • every day (présent) • tomorrow (futur)",
+      usage: "Astuce clé : En anglais, regarde toujours le <strong>mot-indice de temps</strong> dans la phrase avant de conjuguer ! Par exemple, <em>yesterday</em> ou <em>last week</em> appelle le Passé Simple, tandis que <em>right now</em> appelle BE + -ING.",
+      pos: "Présent : I work / She works • Passé : I worked / I went • Futur : I will work / I'm going to work",
+      neg: "Présent : don't / doesn't + base • Passé : didn't + base • Futur : won't + base",
+      question: "Présent : Do / Does + sujet + base ? • Passé : Did + sujet + base ? • Futur : Will + sujet + base ?"
+    },
+    present_all: {
+      icon: "☀️",
+      title: "Tout le Présent : Habitudes (Simple) vs Action en cours (Continu)",
+      markers: "Indices : every day, usually, often (Simple) vs right now, at the moment, Look! (Continu)",
+      usage: "Distinction essentielle : Utilise le <strong>Présent Simple</strong> pour les vérités générales et habitudes (n'oublie pas le <strong>-s</strong> avec he/she/it !), et le <strong>Présent Continu (am/is/are + -ing)</strong> pour une action qui se déroule sous tes yeux maintenant.",
+      pos: "Habitude : I work / She works • En cours : I am working / She is working",
+      neg: "Habitude : I don't work / She doesn't work • En cours : I'm not working / She isn't working",
+      question: "Habitude : Do you work? / Does she work? • En cours : Are you working? / Is she working?"
+    },
+    past_all: {
+      icon: "⏪",
+      title: "Tout le Passé : Passé Simple (-ed / Irréguliers), Present Perfect & Passé Continu",
+      markers: "Indices : yesterday, last night, ago (Passé Simple) • already, ever, just, since, for (Present Perfect)",
+      usage: "Si le moment passé est terminé et daté (<em>yesterday, in 2024, last week</em>), utilise le <strong>Passé Simple</strong> (régulier en <em>-ed</em> ou irrégulier comme <em>went, saw, had</em>). Aux formes négative et question du Passé Simple, utilise <strong>didn't / Did + verbe de base</strong> !",
+      pos: "Passé Simple : I walked / I went • Present Perfect : I have seen • Continu : I was walking",
+      neg: "Passé Simple : I didn't walk / I didn't go (verbe de base après didn't !) • Perfect : I haven't seen",
+      question: "Passé Simple : Did you walk? / Did you go? • Perfect : Have you ever seen...?"
+    },
+    future_all: {
+      icon: "🚀",
+      title: "Tout le Futur & Conditionnel : Going to, Will & Would / Could / Should",
+      markers: "Indices : tomorrow, tonight, next week, soon, in a few days, if I could",
+      usage: "Utilise <strong>am/is/are going to + verbe</strong> pour un projet déjà prévu, <strong>will / won't + verbe</strong> pour une promesse ou décision spontanée, et <strong>would / could / should + verbe</strong> pour la politesse ou un conseil.",
+      pos: "Projet : I'm going to call • Spontané : I will help • Conditionnel : I would love / You should go",
+      neg: "Projet : I'm not going to call • Futur : I won't be late • Conseil : You shouldn't worry",
+      question: "Projet : Are you going to stay? • Futur : Will you come? • Politesse : Could you help me?"
+    },
+    present_simple: {
+      icon: "☀️",
+      title: "Présent Simple — Habitudes, Routines & Vérités générales",
+      markers: "Indices : every day, usually, always, often, on Mondays, never, generally",
+      usage: "Sert à exprimer ce que tu fais régulièrement ou ce qui est toujours vrai. ⚠️ Règle d'or : avec <strong>he / she / it</strong>, ajoute un <strong>-s</strong> (ou <em>-es</em>) au verbe affirmatif (<em>She works, He goes, It takes</em>).",
+      pos: "I / You / We / They work • He / She / It works (goes, watches, has)",
+      neg: "I / You / We / They don't work • He / She / It doesn't work (sans -s au verbe !)",
+      question: "Do you work? • Does she work? (sans -s au verbe !)"
+    },
+    present_continuous: {
+      icon: "⚡",
+      title: "Présent Continu (BE + V-ing) — Action en train de se dérouler",
+      markers: "Indices : right now, at the moment, currently, today, Look!, Listen!",
+      usage: "Sert à décrire ce qui se passe <strong>en ce moment précis</strong>. On conjugue l'auxiliaire <strong>to be</strong> au présent (<em>am / is / are</em>) + le verbe terminé par <strong>-ing</strong>.",
+      pos: "I am working • You / We / They are working • He / She / It is working",
+      neg: "I am not working • You aren't working • She isn't working",
+      question: "Am I disturbing you? • Are you listening? • What is she doing right now?"
+    },
+    past_regular: {
+      icon: "⏪",
+      title: "Passé Simple Régulier (-ed) & Was / Were",
+      markers: "Indices : yesterday, last night, last week, two days ago, in 2023, this morning",
+      usage: "Pour une action terminée dans le passé. Les verbes réguliers prennent <strong>-ed</strong> à toutes les personnes (<em>walked, watched, called</em>). Le verbe <em>to be</em> devient <strong>was</strong> (I/he/she/it) ou <strong>were</strong> (you/we/they). ⚠️ Après <strong>didn't</strong> ou <strong>Did</strong>, le verbe revient à la base !",
+      pos: "I walked / She watched / We worked • I was tired / They were happy",
+      neg: "I didn't walk / She didn't watch (PAS de -ed après didn't !) • I wasn't / They weren't",
+      question: "Did you walk? / Did she call? • Were you in Toronto last summer?"
+    },
+    past_irregular: {
+      icon: "🔥",
+      title: "Passé Simple Irrégulier — Les verbes incontournables du quotidien",
+      markers: "Indices : yesterday, last weekend, a few days ago, when I was in Toronto",
+      usage: "En anglais, les verbes les plus fréquents (<em>go ➔ went, have ➔ had, see ➔ saw, make ➔ made, buy ➔ bought, take ➔ took</em>) ont une forme passée spéciale à l'affirmatif. Mais à la forme négative, on utilise toujours <strong>didn't + base</strong> (ex: <em>I didn't go</em>) !",
+      pos: "I went (go) • She saw (see) • We had (have) • They bought (buy) • He took (take)",
+      neg: "I didn't go • She didn't see • We didn't have (le verbe revient à l'infinitif !)",
+      question: "Where did you go? • What did she say? • Did you have a good flight?"
+    },
+    present_perfect: {
+      icon: "✨",
+      title: "Present Perfect (Have / Has + Participe Passé) — Expérience & Bilan",
+      markers: "Indices : already, just, yet, ever, never, recently, so far, since, for",
+      usage: "Relie le passé au présent : une expérience de vie (<em>I have been to Toronto</em>), une action qui vient juste d'avoir lieu (<em>I have just finished</em>), ou qui dure encore (<em>for 3 months / since May</em>).",
+      pos: "I / You / We / They have + participe (seen, been, done) • He / She / It has + participe",
+      neg: "I haven't finished yet • She hasn't replied yet • I have never tried",
+      question: "Have you ever been to Canada? • Has she already left?"
+    },
+    past_continuous: {
+      icon: "🎬",
+      title: "Passé Continu (Was / Were + V-ing) — Action en cours dans le passé",
+      markers: "Indices : while, when, at 8 PM last night, all morning yesterday",
+      usage: "Décrit le décor ou une action qui était en train de se dérouler à un moment précis du passé, souvent interrompue par une action courte au Passé Simple (ex: <em>I was sleeping when you called</em>).",
+      pos: "I / He / She / It was working • You / We / They were working",
+      neg: "I wasn't sleeping • They weren't paying attention",
+      question: "What were you doing when it started snowing?"
+    },
+    future_going_to: {
+      icon: "📅",
+      title: "Futur Proche (BE + going to + Verbe) — Intentions & Projets prévus",
+      markers: "Indices : tonight, tomorrow, this weekend, next month, soon",
+      usage: "C'est le futur le plus utilisé à l'oral quand tu as <strong>déjà décidé ou prévu</strong> de faire quelque chose, ou que c'est imminent. N'oublie jamais de conjuguer <strong>am / is / are</strong> devant <em>going to</em> !",
+      pos: "I am going to travel • She is going to call • We are going to visit",
+      neg: "I'm not going to wait • He isn't going to come • They aren't going to stay",
+      question: "Are you going to watch the game tonight? • What is she going to do?"
+    },
+    future_will: {
+      icon: "🚀",
+      title: "Futur Simple (Will / Won't + Verbe) — Promesses, Décisions sur le vif & Prédictions",
+      markers: "Indices : I think, I promise, maybe, probably, tomorrow, in the future",
+      usage: "Utilise <strong>will ('ll)</strong> quand tu prends une décision sur-le-champ (<em>I'll pay for the coffee!</em>), que tu fais une promesse (<em>I won't tell anyone</em>), ou une prédiction (<em>I think it will snow</em>).",
+      pos: "I / You / He / She / We / They will + verbe de base (I'll send it right away)",
+      neg: "I / You / He / She / We / They won't (will not) + verbe de base",
+      question: "Will you be there tomorrow? • When will we know the results?"
+    },
+    conditional: {
+      icon: "💭",
+      title: "Conditionnel & Modaux (Would / Could / Should + Verbe)",
+      markers: "Indices : I'd like, if I had time, polite requests, advice",
+      usage: "Ultra utile au quotidien pour être poli(e) et nuancé(e) : <strong>would ('d)</strong> = conditionnel (<em>I would love to come</em>), <strong>could</strong> = pourrais/pourrait (<em>Could you help me?</em>), <strong>should</strong> = devrais/devrait (<em>You should try this café</em>).",
+      pos: "I would ('d) like • You should visit • We could meet tomorrow",
+      neg: "I wouldn't do that • You shouldn't worry • I couldn't hear anything",
+      question: "Would you like some coffee? • Could you send me the link? • Should I call her?"
+    }
+  };
+
+  // 45 Essential Irregular Verbs for the Reference Table
+  const IRREGULAR_VERBS_LIST = [
+    { fr: "être", base: "be (am/is/are)", past: "was / were", pp: "been" },
+    { fr: "avoir", base: "have / has", past: "had", pp: "had" },
+    { fr: "faire (action)", base: "do / does", past: "did", pp: "done" },
+    { fr: "aller", base: "go", past: "went", pp: "gone / been" },
+    { fr: "voir", base: "see", past: "saw", pp: "seen" },
+    { fr: "venir", base: "come", past: "came", pp: "come" },
+    { fr: "prendre", base: "take", past: "took", pp: "taken" },
+    { fr: "fabriquer / faire", base: "make", past: "made", pp: "made" },
+    { fr: "obtenir / devenir / arriver", base: "get", past: "got", pp: "got / gotten" },
+    { fr: "savoir / connaître", base: "know", past: "knew", pp: "known" },
+    { fr: "penser / croire", base: "think", past: "thought", pp: "thought" },
+    { fr: "dire", base: "say", past: "said", pp: "said" },
+    { fr: "raconter / dire à qqn", base: "tell", past: "told", pp: "told" },
+    { fr: "donner", base: "give", past: "gave", pp: "given" },
+    { fr: "trouver", base: "find", past: "found", pp: "found" },
+    { fr: "acheter", base: "buy", past: "bought", pp: "bought" },
+    { fr: "apporter", base: "bring", past: "brought", pp: "brought" },
+    { fr: "partir / quitter / laisser", base: "leave", past: "left", pp: "left" },
+    { fr: "rencontrer / retrouver", base: "meet", past: "met", pp: "met" },
+    { fr: "manger", base: "eat", past: "ate", pp: "eaten" },
+    { fr: "boire", base: "drink", past: "drank", pp: "drunk" },
+    { fr: "dormir", base: "sleep", past: "slept", pp: "slept" },
+    { fr: "écrire", base: "write", past: "wrote", pp: "written" },
+    { fr: "lire (prononcé 'red' au passé)", base: "read", past: "read", pp: "read" },
+    { fr: "parler", base: "speak", past: "spoke", pp: "spoken" },
+    { fr: "comprendre", base: "understand", past: "understood", pp: "understood" },
+    { fr: "entendre", base: "hear", past: "heard", pp: "heard" },
+    { fr: "ressentir / se sentir", base: "feel", past: "felt", pp: "felt" },
+    { fr: "garder / continuer", base: "keep", past: "kept", pp: "kept" },
+    { fr: "commencer", base: "begin", past: "began", pp: "begun" },
+    { fr: "courir", base: "run", past: "ran", pp: "run" },
+    { fr: "envoyer", base: "send", past: "sent", pp: "sent" },
+    { fr: "dépenser / passer du temps", base: "spend", past: "spent", pp: "spent" },
+    { fr: "payer", base: "pay", past: "paid", pp: "paid" },
+    { fr: "oublier", base: "forget", past: "forgot", pp: "forgotten" },
+    { fr: "choisir", base: "choose", past: "chose", pp: "chosen" },
+    { fr: "conduire", base: "drive", past: "drove", pp: "driven" },
+    { fr: "voler (en avion)", base: "fly", past: "flew", pp: "flown" },
+    { fr: "perdre", base: "lose", past: "lost", pp: "lost" },
+    { fr: "gagner", base: "win", past: "won", pp: "won" },
+    { fr: "porter (un vêtement)", base: "wear", past: "wore", pp: "worn" },
+    { fr: "vendre", base: "sell", past: "sold", pp: "sold" },
+    { fr: "enseigner / apprendre à", base: "teach", past: "taught", pp: "taught" },
+    { fr: "attraper / prendre (bus/train)", base: "catch", past: "caught", pp: "caught" },
+    { fr: "mettre / poser", base: "put", past: "put", pp: "put" }
+  ];
+
+  // Dedicated Conjugation Exercises across all 9 Tenses
+  const VERB_TENSE_EXERCISES = [
+    // =====================================================
+    // 1. PRESENT SIMPLE (present_simple)
+    // =====================================================
+    { id: "vt_1", tense: "present_simple", family: "present", verb: "to work", marker: "every day", en: "She works in downtown Toronto every day.", fr: "Elle travaille au centre-ville de Toronto tous les jours.", target: "works", distractors: ["work", "is working", "worked"], note: "Au Présent Simple (habitude 'every day'), avec 'She', on ajoute un -s au verbe : works." },
+    { id: "vt_2", tense: "present_simple", family: "present", verb: "to take", marker: "every morning", en: "I usually take the subway every morning.", fr: "Je prends généralement le métro tous les matins.", target: "take", distractors: ["takes", "took", "am taking"], note: "Habitude ('usually', 'every morning') avec 'I' : base verbale 'take'." },
+    { id: "vt_3", tense: "present_simple", family: "present", verb: "to live (négatif)", marker: "now / vérité générale", en: "He doesn't live far from the station.", fr: "Il n'habite pas loin de la gare.", target: "doesn't live", distractors: ["don't live", "isn't living", "didn't live"], note: "Négation au Présent Simple avec 'He' : doesn't + verbe de base (live)." },
+    { id: "vt_4", tense: "present_simple", family: "present", verb: "to go", marker: "on Saturdays", en: "My sister goes to the gym on Saturdays.", fr: "Ma sœur va à la salle de sport le samedi.", target: "goes", distractors: ["go", "went", "is going"], note: "Habitude ('on Saturdays') avec 'My sister' (she) : go prend -es -> goes." },
+    { id: "vt_5", tense: "present_simple", family: "present", verb: "to like (question)", marker: "habitude", en: "Do you like iced coffee in the summer?", fr: "Est-ce que tu aimes le café glacé en été ?", target: "Do you like", distractors: ["Are you liking", "Did you like", "Does you like"], note: "Question au Présent Simple avec 'you' : Do you + verbe de base." },
+    { id: "vt_6", tense: "present_simple", family: "present", verb: "to have", marker: "usually", en: "She usually has lunch around noon.", fr: "Elle déjeune habituellement vers midi.", target: "has", distractors: ["have", "had", "is having"], note: "Au Présent Simple avec he/she/it, 'to have' devient 'has'." },
+    { id: "vt_7", tense: "present_simple", family: "present", verb: "to open", marker: "every morning", en: "The coffee shop opens at seven every morning.", fr: "Le café ouvre à sept heures tous les matins.", target: "opens", distractors: ["open", "is opening", "opened"], note: "Horaire régulier ('every morning') avec 'The coffee shop' (it) : opens." },
+    { id: "vt_8", tense: "present_simple", family: "present", verb: "to drink (négatif)", marker: "never / le soir", en: "I don't drink coffee in the evening.", fr: "Je ne bois pas de café le soir.", target: "don't drink", distractors: ["doesn't drink", "am not drinking", "didn't drink"], note: "Habitude négative au Présent Simple avec 'I' : don't drink." },
+    { id: "vt_9", tense: "present_simple", family: "present", verb: "to speak (question)", marker: "vérité générale", en: "Does your colleague speak French?", fr: "Est-ce que ton collègue parle français ?", target: "Does", distractors: ["Do", "Is", "Did"], note: "Question au Présent Simple à la 3e personne du singulier ('your colleague') : Does + sujet + speak." },
+    { id: "vt_10", tense: "present_simple", family: "present", verb: "to watch", marker: "often", en: "He often watches movies in English.", fr: "Il regarde souvent des films en anglais.", target: "watches", distractors: ["watch", "is watching", "watched"], note: "Après -ch, -sh, -s, -x, -o, on ajoute -es avec he/she/it : watches." },
+    { id: "vt_11", tense: "present_simple", family: "present", verb: "to be", marker: "always", en: "They are always very welcoming with newcomers.", fr: "Ils sont toujours très accueillants avec les nouveaux venus.", target: "are", distractors: ["is", "were", "have been"], note: "Présent de 'to be' avec 'They' : are." },
+    { id: "vt_12", tense: "present_simple", family: "present", verb: "to start (question)", marker: "horaire", en: "What time does the train leave?", fr: "À quelle heure part le train ?", target: "does the train leave", distractors: ["do the train leave", "is the train leaving", "did the train leave"], note: "Pour les horaires officiels (trains, avions), on utilise le Présent Simple : does the train leave." },
+
+    // =====================================================
+    // 2. PRESENT CONTINUOUS (present_continuous)
+    // =====================================================
+    { id: "vt_13", tense: "present_continuous", family: "present", verb: "to rain", marker: "Look! / right now", en: "Look! It is raining outside right now.", fr: "Regarde ! Il pleut dehors en ce moment même.", target: "is raining", distractors: ["rains", "rained", "will rain"], note: "Indices 'Look!' et 'right now' = action sous nos yeux ➔ Présent Continu (is raining)." },
+    { id: "vt_14", tense: "present_continuous", family: "present", verb: "to cook", marker: "at the moment", en: "She is cooking dinner in the kitchen at the moment.", fr: "Elle est en train de préparer le dîner dans la cuisine en ce moment.", target: "is cooking", distractors: ["cooks", "cooked", "has cooked"], note: "'At the moment' indique une action en cours ➔ is + cooking." },
+    { id: "vt_15", tense: "present_continuous", family: "present", verb: "to wait", marker: "right now", en: "We are waiting for the streetcar right now.", fr: "Nous attendons le tramway en ce moment même.", target: "are waiting", distractors: ["wait", "waited", "were waiting"], note: "Avec 'We' et 'right now' ➔ Présent Continu : are waiting." },
+    { id: "vt_16", tense: "present_continuous", family: "present", verb: "to work", marker: "today", en: "I am working from home today.", fr: "Je travaille depuis la maison aujourd'hui (exceptionnellement).", target: "am working", distractors: ["work", "worked", "was working"], note: "Situation temporaire ('today') avec 'I' ➔ am working." },
+    { id: "vt_17", tense: "present_continuous", family: "present", verb: "to do (question)", marker: "right now", en: "What are you doing right now?", fr: "Qu'est-ce que tu es en train de faire là tout de suite ?", target: "are you doing", distractors: ["do you do", "did you do", "have you done"], note: "Question sur l'action en cours ('right now') ➔ What are you doing?" },
+    { id: "vt_18", tense: "present_continuous", family: "present", verb: "to listen (question)", marker: "en ce moment", en: "Are you listening to me?", fr: "Est-ce que tu m'écoutes (en ce moment) ?", target: "Are you listening", distractors: ["Do you listen", "Did you listen", "Will you listen"], note: "Action en direct ➔ Are you + verbe en -ing." },
+    { id: "vt_19", tense: "present_continuous", family: "present", verb: "to wear", marker: "today", en: "He is wearing a warm winter coat today.", fr: "Il porte un manteau d'hiver chaud aujourd'hui.", target: "is wearing", distractors: ["wears", "wore", "has worn"], note: "Pour décrire ce que quelqu'un porte aujourd'hui, l'anglais utilise toujours BE + wearing." },
+    { id: "vt_20", tense: "present_continuous", family: "present", verb: "to look for", marker: "currently", en: "They are currently looking for a new apartment.", fr: "Ils cherchent actuellement un nouvel appartement.", target: "are currently looking", distractors: ["currently look", "looked", "will look"], note: "'Currently' (actuellement) appelle le Présent Continu : are looking." },
+    { id: "vt_21", tense: "present_continuous", family: "present", verb: "to sleep", marker: "Be quiet!", en: "Be quiet please, the baby is sleeping.", fr: "Fais silence s'il te plaît, le bébé est en train de dormir.", target: "is sleeping", distractors: ["sleeps", "slept", "was sleeping"], note: "'Be quiet!' montre que l'action se passe maintenant ➔ is sleeping." },
+    { id: "vt_22", tense: "present_continuous", family: "present", verb: "to use (négatif)", marker: "right now", en: "I am not using my laptop right now if you need it.", fr: "Je n'utilise pas mon ordinateur portable en ce moment si tu en as besoin.", target: "am not using", distractors: ["don't use", "didn't use", "wasn't using"], note: "Négation du Présent Continu avec 'I' : am not using." },
+
+    // =====================================================
+    // 3. PAST REGULAR & WAS/WERE (past_regular)
+    // =====================================================
+    { id: "vt_23", tense: "past_regular", family: "past", verb: "to walk", marker: "yesterday", en: "Yesterday, we walked along the harbourfront.", fr: "Hier, nous avons marché le long du port.", target: "walked", distractors: ["walk", "are walking", "will walk"], note: "'Yesterday' = action terminée dans le passé ➔ verbe régulier + -ed (walked)." },
+    { id: "vt_24", tense: "past_regular", family: "past", verb: "to watch", marker: "last night", en: "I watched a great documentary last night.", fr: "J'ai regardé un super documentaire hier soir.", target: "watched", distractors: ["watch", "have watched", "was watching"], note: "'Last night' est un moment passé révolu ➔ Passé Simple : watched." },
+    { id: "vt_25", tense: "past_regular", family: "past", verb: "to be", marker: "yesterday", en: "She was very busy at the office yesterday.", fr: "Elle était très occupée au bureau hier.", target: "was", distractors: ["is", "were", "has been"], note: "Passé de 'to be' avec 'She' : was." },
+    { id: "vt_26", tense: "past_regular", family: "past", verb: "to be", marker: "last weekend", en: "We were in Montreal last weekend.", fr: "Nous étions à Montréal le week-end dernier.", target: "were", distractors: ["was", "are", "will be"], note: "Passé de 'to be' au pluriel ('We / You / They') : were." },
+    { id: "vt_27", tense: "past_regular", family: "past", verb: "to work (négatif)", marker: "yesterday", en: "I didn't work yesterday because it was a holiday.", fr: "Je n'ai pas travaillé hier car c'était un jour férié.", target: "didn't work", distractors: ["didn't worked", "don't work", "wasn't working"], note: "⚠️ Règle clé : après 'didn't', le verbe revient TOUJOURS à la base sans -ed (didn't work)." },
+    { id: "vt_28", tense: "past_regular", family: "past", verb: "to call (question)", marker: "this morning", en: "Did you call your parents this morning?", fr: "As-tu appelé tes parents ce matin ?", target: "Did you call", distractors: ["Did you called", "Do you call", "Were you calling"], note: "Question au Passé Simple : Did + sujet + verbe de base (call)." },
+    { id: "vt_29", tense: "past_regular", family: "past", verb: "to arrive", marker: "two hours ago", en: "Our flight arrived two hours ago.", fr: "Notre vol est arrivé il y a deux heures.", target: "arrived", distractors: ["arrives", "has arrived", "is arriving"], note: "'Ago' (il y a...) déclenche toujours le Passé Simple : arrived." },
+    { id: "vt_30", tense: "past_regular", family: "past", verb: "to rain", marker: "all day yesterday", en: "It rained heavily all day yesterday.", fr: "Il a plu fort toute la journée d'hier.", target: "rained", distractors: ["rains", "is raining", "will rain"], note: "Action passée terminée ('yesterday') ➔ rained." },
+    { id: "vt_31", tense: "past_regular", family: "past", verb: "to book", marker: "last week", en: "They booked their train tickets last week.", fr: "Ils ont réservé leurs billets de train la semaine dernière.", target: "booked", distractors: ["book", "are booking", "will book"], note: "'Last week' = Passé Simple régulier : booked." },
+    { id: "vt_32", tense: "past_regular", family: "past", verb: "to study", marker: "in 2024", en: "She studied English in Toronto for four months.", fr: "Elle a étudié l'anglais à Toronto pendant quatre mois.", target: "studied", distractors: ["studies", "is studying", "study"], note: "Verbe en consonne + y (study) ➔ le -y devient -ied au passé : studied." },
+    { id: "vt_33", tense: "past_regular", family: "past", verb: "to be (négatif)", marker: "last night", en: "The restaurant wasn't very crowded last night.", fr: "Le restaurant n'était pas très rempli hier soir.", target: "wasn't", distractors: ["isn't", "weren't", "didn't be"], note: "Avec 'to be' au passé, on n'utilise jamais 'didn't' : on dit wasn't / weren't." },
+    { id: "vt_34", tense: "past_regular", family: "past", verb: "to enjoy (question)", marker: "last weekend", en: "Did you enjoy the concert last weekend?", fr: "As-tu apprécié le concert le week-end dernier ?", target: "Did you enjoy", distractors: ["Do you enjoy", "Were you enjoy", "Did you enjoyed"], note: "Did + sujet + base verbale (enjoy)." },
+
+    // =====================================================
+    // 4. PAST IRREGULAR (past_irregular)
+    // =====================================================
+    { id: "vt_35", tense: "past_irregular", family: "past", verb: "to go", marker: "yesterday", en: "Yesterday, I went to St. Lawrence Market.", fr: "Hier, je suis allé(e) au marché St. Lawrence.", target: "went", distractors: ["go", "gone", "am going"], note: "Passé irrégulier de 'to go' ➔ went." },
+    { id: "vt_36", tense: "past_irregular", family: "past", verb: "to see", marker: "last night", en: "We saw a beautiful sunset over Lake Ontario last night.", fr: "Nous avons vu un magnifique coucher de soleil sur le lac Ontario hier soir.", target: "saw", distractors: ["see", "seen", "were seeing"], note: "Passé irrégulier de 'to see' ➔ saw (attention : 'seen' est le participe passé !)." },
+    { id: "vt_37", tense: "past_irregular", family: "past", verb: "to buy", marker: "this morning", en: "She bought fresh bagels at the bakery this morning.", fr: "Elle a acheté des bagels frais à la boulangerie ce matin.", target: "bought", distractors: ["buy", "buyed", "is buying"], note: "Passé irrégulier de 'to buy' ➔ bought." },
+    { id: "vt_38", tense: "past_irregular", family: "past", verb: "to have", marker: "yesterday", en: "They had a wonderful time at Niagara Falls yesterday.", fr: "Ils ont passé un moment merveilleux aux chutes du Niagara hier.", target: "had", distractors: ["have", "has", "having"], note: "Passé irrégulier de 'to have' ➔ had." },
+    { id: "vt_39", tense: "past_irregular", family: "past", verb: "to take", marker: "ten minutes ago", en: "He took a taxi to the airport ten minutes ago.", fr: "Il a pris un taxi pour l'aéroport il y a dix minutes.", target: "took", distractors: ["take", "taken", "takes"], note: "Passé irrégulier de 'to take' ➔ took." },
+    { id: "vt_40", tense: "past_irregular", family: "past", verb: "to make", marker: "for breakfast", en: "I made pancakes with maple syrup for breakfast.", fr: "J'ai fait des pancakes au sirop d'érable pour le petit-déjeuner.", target: "made", distractors: ["make", "maked", "am making"], note: "Passé irrégulier de 'to make' ➔ made." },
+    { id: "vt_41", tense: "past_irregular", family: "past", verb: "to meet", marker: "in Toronto", en: "I met so many friendly people when I was in Toronto.", fr: "J'ai rencontré tellement de gens sympathiques quand j'étais à Toronto.", target: "met", distractors: ["meet", "meeted", "have met"], note: "Passé irrégulier de 'to meet' ➔ met." },
+    { id: "vt_42", tense: "past_irregular", family: "past", verb: "to leave", marker: "early this morning", en: "She left the house early this morning.", fr: "Elle a quitté la maison tôt ce matin.", target: "left", distractors: ["leave", "leaved", "leaves"], note: "Passé irrégulier de 'to leave' ➔ left." },
+    { id: "vt_43", tense: "past_irregular", family: "past", verb: "to forget", marker: "yesterday", en: "Oops, I forgot my umbrella on the train yesterday.", fr: "Oups, j'ai oublié mon parapluie dans le train hier.", target: "forgot", distractors: ["forget", "forgotten", "forgets"], note: "Passé irrégulier de 'to forget' ➔ forgot." },
+    { id: "vt_44", tense: "past_irregular", family: "past", verb: "to tell", marker: "last week", en: "He told me the good news last week.", fr: "Il m'a annoncé la bonne nouvelle la semaine dernière.", target: "told", distractors: ["tell", "telled", "tells"], note: "Passé irrégulier de 'to tell' ➔ told." },
+    { id: "vt_45", tense: "past_irregular", family: "past", verb: "to come", marker: "last Friday", en: "My friends came over for dinner last Friday.", fr: "Mes amis sont venus dîner à la maison vendredi dernier.", target: "came", distractors: ["come", "comed", "are coming"], note: "Passé irrégulier de 'to come' ➔ came." },
+    { id: "vt_46", tense: "past_irregular", family: "past", verb: "to find", marker: "yesterday", en: "Thankfully, I found my keys in my coat pocket.", fr: "Heureusement, j'ai trouvé mes clés dans la poche de mon manteau.", target: "found", distractors: ["find", "finded", "am finding"], note: "Passé irrégulier de 'to find' ➔ found." },
+    { id: "vt_47", tense: "past_irregular", family: "past", verb: "to go (négatif)", marker: "last night", en: "We didn't go out last night because we were tired.", fr: "Nous ne sommes pas sortis hier soir parce que nous étions fatigués.", target: "didn't go", distractors: ["didn't went", "don't go", "haven't gone"], note: "⚠️ Piège classique : après 'didn't', on remet 'go' (jamais 'didn't went') !" },
+    { id: "vt_48", tense: "past_irregular", family: "past", verb: "to eat", marker: "at noon", en: "We ate lunch at a cozy little bistro on Queen Street.", fr: "Nous avons déjeuné dans un petit bistrot chaleureux sur Queen Street.", target: "ate", distractors: ["eat", "eaten", "were eating"], note: "Passé irrégulier de 'to eat' ➔ ate." },
+    { id: "vt_49", tense: "past_irregular", family: "past", verb: "to spend", marker: "last summer", en: "She spent three months in Canada last summer.", fr: "Elle a passé trois mois au Canada l'été dernier.", target: "spent", distractors: ["spend", "spended", "spends"], note: "Passé irrégulier de 'to spend' ➔ spent." },
+    { id: "vt_50", tense: "past_irregular", family: "past", verb: "to speak", marker: "yesterday", en: "I spoke with the manager about my schedule yesterday.", fr: "J'ai parlé de mon emploi du temps avec le responsable hier.", target: "spoke", distractors: ["speak", "spoken", "speaks"], note: "Passé irrégulier de 'to speak' ➔ spoke." },
+
+    // =====================================================
+    // 5. PRESENT PERFECT (present_perfect)
+    // =====================================================
+    { id: "vt_51", tense: "present_perfect", family: "past", verb: "to be (expérience)", marker: "ever", en: "Have you ever been to Toronto?", fr: "Es-tu déjà allé(e) à Toronto (dans ta vie) ?", target: "Have you ever been", distractors: ["Did you ever go", "Are you ever being", "Were you ever"], note: "Pour une expérience de vie ('ever' = déjà dans ta vie), on utilise le Present Perfect : Have you ever been...?" },
+    { id: "vt_52", tense: "present_perfect", family: "past", verb: "to finish", marker: "already", en: "She has already finished her report.", fr: "Elle a déjà terminé son rapport.", target: "has already finished", distractors: ["already finished", "is already finishing", "have already finished"], note: "Avec 'already' et 'She' ➔ Present Perfect : has already finished." },
+    { id: "vt_53", tense: "present_perfect", family: "past", verb: "to see (négatif)", marker: "yet", en: "I haven't seen that movie yet.", fr: "Je n'ai pas encore vu ce film.", target: "haven't seen", distractors: ["didn't see", "don't see", "haven't saw"], note: "'Yet' (pas encore) s'utilise avec le Present Perfect : haven't + participe passé (seen)." },
+    { id: "vt_54", tense: "present_perfect", family: "past", verb: "to arrive", marker: "just", en: "We have just arrived at the station.", fr: "Nous venons tout juste d'arriver à la gare.", target: "have just arrived", distractors: ["just arrive", "are just arriving", "had just arrive"], note: "Pour traduire 'venir tout juste de faire qqch' : have/has just + participe passé." },
+    { id: "vt_55", tense: "present_perfect", family: "past", verb: "to live", marker: "for five years", en: "They have lived in this neighborhood for five years.", fr: "Ils habitent dans ce quartier depuis cinq ans (et y sont encore).", target: "have lived", distractors: ["live", "lived", "are living"], note: "En anglais, une action commencée dans le passé qui continue aujourd'hui ('for / since') se met au Present Perfect !" },
+    { id: "vt_56", tense: "present_perfect", family: "past", verb: "to try", marker: "never", en: "I have never tried poutine before.", fr: "Je n'ai encore jamais goûté de poutine auparavant.", target: "have never tried", distractors: ["never tried", "am never trying", "has never tried"], note: "Bilan d'expérience avec 'never' : have never + participe passé." },
+    { id: "vt_57", tense: "present_perfect", family: "past", verb: "to lose", marker: "conséquence présente", en: "Oh no, I have lost my boarding pass!", fr: "Oh non, j'ai perdu ma carte d'embarquement (et je ne l'ai plus maintenant) !", target: "have lost", distractors: ["lose", "am losing", "has lost"], note: "Action passée avec une conséquence directe maintenant ➔ Present Perfect (have lost)." },
+    { id: "vt_58", tense: "present_perfect", family: "past", verb: "to know", marker: "since 2021", en: "I have known her since 2021.", fr: "Je la connais depuis 2021.", target: "have known", distractors: ["know", "knew", "am knowing"], note: "Avec 'since 2021' (depuis 2021), on utilise have/has + participe passé (known)." },
+    { id: "vt_59", tense: "present_perfect", family: "past", verb: "to reply (négatif)", marker: "yet", en: "He hasn't replied to my email yet.", fr: "Il n'a pas encore répondu à mon e-mail.", target: "hasn't replied", distractors: ["didn't reply", "doesn't reply", "haven't replied"], note: "3e personne ('He') + 'yet' ➔ hasn't replied." },
+    { id: "vt_60", tense: "present_perfect", family: "past", verb: "to eat (question)", marker: "already", en: "Have you eaten lunch yet?", fr: "As-tu déjà déjeuné ?", target: "Have you eaten", distractors: ["Did you eat", "Do you eat", "Have you ate"], note: "Participe passé de 'eat' : eaten (Have you eaten?)." },
+
+    // =====================================================
+    // 6. PAST CONTINUOUS (past_continuous)
+    // =====================================================
+    { id: "vt_61", tense: "past_continuous", family: "past", verb: "to sleep", marker: "when you called", en: "I was sleeping when you called me last night.", fr: "J'étais en train de dormir quand tu m'as appelé(e) hier soir.", target: "was sleeping", distractors: ["slept", "am sleeping", "have slept"], note: "Action longue en cours dans le passé ('was sleeping') interrompue par une action courte ('when you called')." },
+    { id: "vt_62", tense: "past_continuous", family: "past", verb: "to snow", marker: "when we left", en: "It was snowing heavily when we left the restaurant.", fr: "Il neigeait fort quand nous avons quitté le restaurant.", target: "was snowing", distractors: ["snowed", "is snowing", "has snowed"], note: "Décor en cours dans le passé ➔ was snowing." },
+    { id: "vt_63", tense: "past_continuous", family: "past", verb: "to walk", marker: "when I saw her", en: "We were walking down Yonge Street when we saw her.", fr: "Nous marchions sur Yonge Street quand nous l'avons vue.", target: "were walking", distractors: ["walked", "was walking", "are walking"], note: "Avec 'We' au Passé Continu ➔ were + walking." },
+    { id: "vt_64", tense: "past_continuous", family: "past", verb: "to do (question)", marker: "at 8 PM yesterday", en: "What were you doing at eight o'clock last night?", fr: "Que faisais-tu hier soir à vingt heures ?", target: "were you doing", distractors: ["did you do", "are you doing", "was you doing"], note: "Action en cours à une heure précise du passé ➔ What were you doing?" },
+    { id: "vt_65", tense: "past_continuous", family: "past", verb: "to wait", marker: "for the bus", en: "She was waiting for the bus when it started to rain.", fr: "Elle attendait le bus quand il a commencé à pleuvoir.", target: "was waiting", distractors: ["waited", "is waiting", "were waiting"], note: "Avec 'She' au Passé Continu ➔ was waiting." },
+    { id: "vt_66", tense: "past_continuous", family: "past", verb: "to listen (négatif)", marker: "sorry", en: "Sorry, I wasn't listening. Could you repeat that?", fr: "Désolé(e), je n'écoutais pas. Pourrais-tu répéter ?", target: "wasn't listening", distractors: ["didn't listen", "am not listening", "weren't listening"], note: "Pour dire 'je n'étais pas en train d'écouter' ➔ I wasn't listening." },
+    { id: "vt_67", tense: "past_continuous", family: "past", verb: "to work", marker: "while", en: "While I was cooking, he was setting the table.", fr: "Pendant que je cuisinais, il mettait la table.", target: "was cooking", distractors: ["cooked", "am cooking", "have cooked"], note: "Après 'While' (pendant que) au passé, on utilise le Passé Continu : was cooking." },
+    { id: "vt_68", tense: "past_continuous", family: "past", verb: "to talk", marker: "on the phone", en: "They were talking on the phone when I walked in.", fr: "Ils parlaient au téléphone quand je suis entré(e).", target: "were talking", distractors: ["talked", "was talking", "are talking"], note: "Pluriel 'They' au Passé Continu ➔ were talking." },
+
+    // =====================================================
+    // 7. FUTURE GOING TO (future_going_to)
+    // =====================================================
+    { id: "vt_69", tense: "future_going_to", family: "future", verb: "to visit", marker: "next weekend", en: "We are going to visit Toronto Islands next weekend.", fr: "Nous allons visiter les îles de Toronto le week-end prochain (projet prévu).", target: "are going to visit", distractors: ["going to visit", "visited", "visit"], note: "Futur proche (projet déjà prévu) avec 'We' : are going to + verbe." },
+    { id: "vt_70", tense: "future_going_to", family: "future", verb: "to call", marker: "tonight", en: "I am going to call my friends in Canada tonight.", fr: "Je vais appeler mes amis au Canada ce soir.", target: "am going to call", distractors: ["going to call", "called", "call"], note: "Avec 'I' : I am going to call (n'oublie pas 'am' !)." },
+    { id: "vt_71", tense: "future_going_to", family: "future", verb: "to buy", marker: "tomorrow", en: "She is going to buy a new winter jacket tomorrow.", fr: "Elle va s'acheter une nouvelle veste d'hiver demain.", target: "is going to buy", distractors: ["are going to buy", "bought", "buys"], note: "Intention prévue avec 'She' : is going to buy." },
+    { id: "vt_72", tense: "future_going_to", family: "future", verb: "to rain", marker: "Look at those clouds!", en: "Look at those dark clouds! It is going to rain soon.", fr: "Regarde ces nuages noirs ! Il va bientôt pleuvoir.", target: "is going to rain", distractors: ["rains", "rained", "was raining"], note: "Quand un signe visible montre que quelque chose est imminent, on utilise 'is going to'." },
+    { id: "vt_73", tense: "future_going_to", family: "future", verb: "to do (question)", marker: "this evening", en: "What are you going to do this evening?", fr: "Qu'est-ce que tu vas faire ce soir ?", target: "are you going to do", distractors: ["do you going to do", "did you do", "will you doing"], note: "Question sur les projets de quelqu'un : What are you going to do?" },
+    { id: "vt_74", tense: "future_going_to", family: "future", verb: "to stay", marker: "for two weeks", en: "They are going to stay with us for two weeks.", fr: "Ils vont rester chez nous pendant deux semaines.", target: "are going to stay", distractors: ["is going to stay", "stayed", "stay"], note: "Avec 'They' : are going to stay." },
+    { id: "vt_75", tense: "future_going_to", family: "future", verb: "to cook (négatif)", marker: "tonight", en: "We aren't going to cook tonight; let's order Thai food!", fr: "Nous n'allons pas cuisiner ce soir ; commandons thaï !", target: "aren't going to cook", distractors: ["don't going to cook", "didn't cook", "weren't cooking"], note: "Négation du futur proche : aren't going to + verbe." },
+    { id: "vt_76", tense: "future_going_to", family: "future", verb: "to move", marker: "next month", en: "He is going to move into his new apartment next month.", fr: "Il va emménager dans son nouvel appartement le mois prochain.", target: "is going to move", distractors: ["moves", "moved", "moving"], note: "Projet planifié ('next month') avec 'He' : is going to move." },
+
+    // =====================================================
+    // 8. FUTURE WILL / WON'T (future_will)
+    // =====================================================
+    { id: "vt_77", tense: "future_will", family: "future", verb: "to help", marker: "décision spontanée", en: "That bag looks heavy! I will help you carry it.", fr: "Ce sac a l'air lourd ! Je vais t'aider à le porter (décision prise sur l'instant).", target: "will help", distractors: ["am helping", "helped", "helps"], note: "Pour proposer son aide spontanément sur le moment, l'anglais utilise toujours 'I will (I'll) + verbe'." },
+    { id: "vt_78", tense: "future_will", family: "future", verb: "to send", marker: "right away", en: "I will send you the address on WhatsApp right away.", fr: "Je t'envoie l'adresse sur WhatsApp tout de suite.", target: "will send", distractors: ["sent", "am sending", "sends"], note: "Promesse / action immédiate : I will send." },
+    { id: "vt_79", tense: "future_will", family: "future", verb: "to be (négatif)", marker: "I promise", en: "Don't worry, I won't be late tomorrow morning!", fr: "Ne t'inquiète pas, je ne serai pas en retard demain matin !", target: "won't be", distractors: ["willn't be", "am not", "wasn't"], note: "La forme négative de 'will' est 'won't' (will not) + base verbale 'be'." },
+    { id: "vt_80", tense: "future_will", family: "future", verb: "to love", marker: "I think", en: "I think you will love Kensington Market!", fr: "Je pense que tu vas adorer Kensington Market !", target: "will love", distractors: ["loved", "are loving", "have loved"], note: "Après 'I think / I'm sure', on utilise généralement 'will + verbe'." },
+    { id: "vt_81", tense: "future_will", family: "future", verb: "to tell (négatif)", marker: "secret / promesse", en: "Your secret is safe with me; I won't tell anyone.", fr: "Ton secret est bien gardé avec moi ; je ne le dirai à personne.", target: "won't tell", distractors: ["don't tell", "didn't tell", "not tell"], note: "Promesse au futur négatif : I won't tell." },
+    { id: "vt_82", tense: "future_will", family: "future", verb: "to call", marker: "as soon as", en: "She will call us as soon as her plane lands.", fr: "Elle nous appellera dès que son avion atterrira.", target: "will call", distractors: ["called", "is calling", "has called"], note: "Action future dans la proposition principale : She will call." },
+    { id: "vt_83", tense: "future_will", family: "future", verb: "to have", marker: "au restaurant", en: "I think I will have the grilled salmon, please.", fr: "Je pense que je vais prendre le saumon grillé, s'il vous plaît.", target: "will have", distractors: ["had", "am having", "has"], note: "Au restaurant, pour annoncer son choix au serveur, on dit 'I'll have / I will have'." },
+    { id: "vt_84", tense: "future_will", family: "future", verb: "to see", marker: "tomorrow", en: "Have a great evening, I will see you tomorrow!", fr: "Passe une très bonne soirée, on se voit demain !", target: "will see", distractors: ["saw", "have seen", "seeing"], note: "Expression classique de départ : I'll see you / I will see you tomorrow." },
+
+    // =====================================================
+    // 9. CONDITIONAL : WOULD / COULD / SHOULD (conditional)
+    // =====================================================
+    { id: "vt_85", tense: "conditional", family: "future", verb: "to like (conditionnel poli)", marker: "politesse", en: "I would like a medium oat milk latte, please.", fr: "Je voudrais un latte moyen au lait d'avoine, s'il vous plaît.", target: "would like", distractors: ["want", "liked", "will like"], note: "'Je voudrais' se traduit toujours par 'I would like' (ou 'I'd like'), beaucoup plus poli que 'I want'." },
+    { id: "vt_86", tense: "conditional", family: "future", verb: "to help (question polie)", marker: "politesse", en: "Excuse me, could you help me for a second?", fr: "Excusez-moi, pourriez-vous m'aider une seconde ?", target: "could you help", distractors: ["can you helped", "did you help", "would you helping"], note: "'Pourriez-vous' = Could you + verbe de base." },
+    { id: "vt_87", tense: "conditional", family: "future", verb: "to try (conseil)", marker: "conseil", en: "You should really try the butter tarts at this bakery!", fr: "Tu devrais vraiment goûter les tartelettes au beurre de cette boulangerie !", target: "should really try", distractors: ["would really try", "tried", "are trying"], note: "Pour donner un conseil ('tu devrais'), on utilise 'You should + verbe de base'." },
+    { id: "vt_88", tense: "conditional", family: "future", verb: "to love", marker: "invitation", en: "I would love to join you for brunch on Sunday!", fr: "J'adorerais me joindre à vous pour le brunch dimanche !", target: "would love", distractors: ["loved", "am loving", "should love"], note: "'J'adorerais' (conditionnel) = I would love (I'd love)." },
+    { id: "vt_89", tense: "conditional", family: "future", verb: "to worry (conseil négatif)", marker: "conseil", en: "You shouldn't worry so much; everything will be fine.", fr: "Tu ne devrais pas tant t'inquiéter ; tout ira bien.", target: "shouldn't worry", distractors: ["don't worry", "wouldn't worried", "didn't worry"], note: "'Tu ne devrais pas' = You shouldn't + verbe de base." },
+    { id: "vt_90", tense: "conditional", family: "future", verb: "to travel (hypothèse)", marker: "if I had more time", en: "If I had more vacation days, I would travel across Canada.", fr: "Si j'avais plus de jours de congé, je voyagerais à travers le Canada.", target: "would travel", distractors: ["will travel", "traveled", "am traveling"], note: "Conditionnel (If + passé ➔ I would + verbe de base)." },
+    { id: "vt_91", tense: "conditional", family: "future", verb: "to mind (question)", marker: "politesse", en: "Would you like to grab a coffee after work?", fr: "Aimerais-tu aller prendre un café après le travail ?", target: "Would you like", distractors: ["Do you like", "Did you like", "Will you liking"], note: "Pour proposer quelque chose poliment : Would you like to...?" },
+    { id: "vt_92", tense: "conditional", family: "future", verb: "to send (demande polie)", marker: "au travail", en: "Could you please send me the updated file when you have a moment?", fr: "Pourrais-tu m'envoyer le fichier mis à jour quand tu auras un moment ?", target: "Could you please send", distractors: ["Can you sent", "Did you send", "Should you send"], note: "Formule professionnelle très naturelle : Could you please + verbe de base." }
+  ];
+
+  // State for Verb Tenses tab
+  let currentTenseFilter = "all";
+  let currentTenseMode = "fill";
+  let currentTenseSession = [];
+  let currentTenseIndex = 0;
+  let tenseSessionAnswered = 0;
+  let tenseSessionCorrect = 0;
+  let isTenseAnswerChecked = false;
+  let selectedTenseQCMOption = null;
+  let tensesInitialized = false;
+
+  function getFilteredTensePool(filterKey) {
+    if (!filterKey || filterKey === "all") return [...VERB_TENSE_EXERCISES];
+    if (filterKey === "present_all") {
+      return VERB_TENSE_EXERCISES.filter(x => x.family === "present");
+    }
+    if (filterKey === "past_all") {
+      return VERB_TENSE_EXERCISES.filter(x => x.family === "past");
+    }
+    if (filterKey === "future_all") {
+      return VERB_TENSE_EXERCISES.filter(x => x.family === "future");
+    }
+    return VERB_TENSE_EXERCISES.filter(x => x.tense === filterKey);
+  }
+
+  function renderTenseGrammarCard(filterKey) {
+    const meta = TENSE_META[filterKey] || TENSE_META.all;
+    const iconEl = document.getElementById("tenseRuleIcon");
+    const titleEl = document.getElementById("tenseRuleTitle");
+    const markersEl = document.getElementById("tenseTimeMarkers");
+    const usageEl = document.getElementById("tenseRuleUsage");
+    const posEl = document.getElementById("tenseFormulaPos");
+    const negEl = document.getElementById("tenseFormulaNeg");
+    const qEl = document.getElementById("tenseFormulaQuestion");
+
+    if (iconEl) iconEl.textContent = meta.icon;
+    if (titleEl) titleEl.textContent = meta.title;
+    if (markersEl) markersEl.textContent = meta.markers;
+    if (usageEl) usageEl.innerHTML = meta.usage;
+    if (posEl) posEl.textContent = meta.pos;
+    if (negEl) negEl.textContent = meta.neg;
+    if (qEl) qEl.textContent = meta.question;
+
+    const poolCountBadge = document.getElementById("tensePoolCountBadge");
+    if (poolCountBadge) {
+      const count = getFilteredTensePool(filterKey).length;
+      poolCountBadge.textContent = `${count} exercices ciblés sur ce choix`;
+    }
+  }
+
+  function selectTenseFilter(filterKey) {
+    currentTenseFilter = filterKey || "all";
+    document.querySelectorAll(".tense-filter-btn").forEach(btn => {
+      const active = btn.dataset.tenseFilter === currentTenseFilter;
+      if (active) {
+        btn.classList.add("active", "bg-indigo-600", "text-white", "shadow-sm");
+        btn.classList.remove("bg-slate-100", "dark:bg-slate-700", "text-slate-700", "dark:text-slate-200");
+      } else {
+        btn.classList.remove("active", "bg-indigo-600", "text-white", "shadow-sm");
+        btn.classList.add("bg-slate-100", "dark:bg-slate-700", "text-slate-700", "dark:text-slate-200");
+      }
+    });
+    renderTenseGrammarCard(currentTenseFilter);
+    startTenseSession();
+  }
+
+  function shuffleArray(arr) {
+    const copy = [...arr];
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  function startTenseSession() {
+    const pool = getFilteredTensePool(currentTenseFilter);
+    currentTenseSession = shuffleArray(pool).slice(0, 15);
+    currentTenseIndex = 0;
+    tenseSessionAnswered = 0;
+    tenseSessionCorrect = 0;
+    renderCurrentTenseExercise();
+  }
+
+  function getTenseBadgeLabel(tenseKey) {
+    const labels = {
+      present_simple: "☀️ Présent Simple",
+      present_continuous: "⚡ Présent Continu",
+      past_regular: "⏪ Passé Régulier (-ed / was / were)",
+      past_irregular: "🔥 Passé Irrégulier",
+      present_perfect: "✨ Present Perfect",
+      past_continuous: "🎬 Passé Continu",
+      future_going_to: "📅 Futur Proche (Going to)",
+      future_will: "🚀 Futur Simple (Will / Won't)",
+      conditional: "💭 Conditionnel (Would / Could / Should)"
+    };
+    return labels[tenseKey] || "⏳ Conjugaison";
+  }
+
+  function renderCurrentTenseExercise() {
+    const ex = currentTenseSession[currentTenseIndex];
+    if (!ex) return;
+
+    isTenseAnswerChecked = false;
+    selectedTenseQCMOption = null;
+
+    const total = currentTenseSession.length;
+    const progText = document.getElementById("tenseSessionProgressText");
+    const accText = document.getElementById("tenseSessionAccuracyText");
+    const progBar = document.getElementById("tenseSessionProgressBar");
+
+    if (progText) progText.textContent = `Verbe ${currentTenseIndex + 1} / ${total}`;
+    if (accText) {
+      const pct = tenseSessionAnswered > 0 ? Math.round((tenseSessionCorrect / tenseSessionAnswered) * 100) : 100;
+      accText.textContent = `Précision : ${pct}%`;
+    }
+    if (progBar) {
+      progBar.style.width = `${Math.max(7, Math.round(((currentTenseIndex + 1) / total) * 100))}%`;
+    }
+
+    const cardBadge = document.getElementById("tenseCardBadge");
+    const verbBadge = document.getElementById("tenseVerbPromptBadge");
+    const markerBadge = document.getElementById("tenseMarkerBadge");
+    const promptFr = document.getElementById("tensePromptFr");
+    const hintBox = document.getElementById("tenseHintBox");
+    const hintText = document.getElementById("tenseHintText");
+    const feedback = document.getElementById("tenseFeedbackContainer");
+    const verifyBtn = document.getElementById("tenseVerifyBtn");
+    const nextBtn = document.getElementById("tenseNextBtn");
+    const area = document.getElementById("tenseInteractionArea");
+
+    if (cardBadge) cardBadge.textContent = getTenseBadgeLabel(ex.tense);
+    if (verbBadge) verbBadge.textContent = `Verbe : ${ex.verb.toUpperCase()}`;
+    if (markerBadge) markerBadge.textContent = `Indice : ${ex.marker}`;
+    if (promptFr) promptFr.textContent = ex.fr;
+
+    if (hintBox) hintBox.classList.add("hidden");
+    if (hintText) hintText.textContent = `💡 Règle : ${ex.note}`;
+
+    if (feedback) {
+      feedback.classList.add("hidden");
+      feedback.innerHTML = "";
+    }
+    if (verifyBtn) verifyBtn.classList.remove("hidden");
+    if (nextBtn) nextBtn.classList.add("hidden");
+
+    if (!area) return;
+
+    // Build masked sentence where target is replaced by input/blank + verb hint
+    const escapedTarget = ex.target.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`\\b${escapedTarget}\\b`, 'i');
+    const options = shuffleArray([ex.target, ...(ex.distractors || []).slice(0, 3)]);
+
+    if (currentTenseMode === "qcm") {
+      const blankedSentence = ex.en.replace(regex, `<span class="px-3 py-1 mx-1 rounded-xl bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-extrabold underline decoration-dashed">___ (${ex.verb}) ___</span>`);
+      area.innerHTML = `
+        <div class="space-y-5">
+          <div class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-relaxed">
+            ${blankedSentence}
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="tenseQcmGrid">
+            ${options.map(opt => `
+              <button type="button" data-tense-qcm="${opt.replace(/"/g, '&quot;')}" class="tense-qcm-opt p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:border-indigo-500 text-left font-bold text-sm sm:text-base text-slate-800 dark:text-slate-100 transition flex items-center justify-between">
+                <span>${opt}</span>
+                <span class="text-xs text-slate-400">Choisir</span>
+              </button>
+            `).join("")}
+          </div>
+        </div>
+      `;
+
+      area.querySelectorAll(".tense-qcm-opt").forEach(btn => {
+        btn.addEventListener("click", () => {
+          playSound("click");
+          selectedTenseQCMOption = btn.dataset.tenseQcm;
+          area.querySelectorAll(".tense-qcm-opt").forEach(b => {
+            b.classList.remove("border-indigo-600", "bg-indigo-50/70", "dark:bg-indigo-950/50");
+          });
+          btn.classList.add("border-indigo-600", "bg-indigo-50/70", "dark:bg-indigo-950/50");
+          verifyTenseAnswer();
+        });
+      });
+    } else if (currentTenseMode === "writing") {
+      area.innerHTML = `
+        <div class="space-y-3">
+          <label class="block text-xs font-bold uppercase text-slate-400">
+            Traduis toute la phrase en anglais en conjuguant "${ex.verb}" au bon temps :
+          </label>
+          <input id="tenseWritingInput" type="text" autocomplete="off" placeholder="Écris la phrase en anglais ici..." class="w-full px-4 py-3.5 rounded-2xl border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-base font-bold text-slate-900 dark:text-white focus:border-indigo-500 outline-none" />
+        </div>
+      `;
+      const wInput = document.getElementById("tenseWritingInput");
+      if (wInput) {
+        wInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!isTenseAnswerChecked) verifyTenseAnswer();
+            else goToNextTenseExercise();
+          }
+        });
+      }
+    } else {
+      // Default 'fill' mode: inline input + 4 quick-choice conjugation pills
+      const inputHtml = `<input id="tenseClozeInput" type="text" autocomplete="off" placeholder="${ex.verb}" class="inline-block w-48 sm:w-56 mx-1 px-3 py-1.5 rounded-xl border-2 border-indigo-400 dark:border-indigo-500 bg-indigo-50/50 dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 font-extrabold text-center focus:outline-none focus:ring-2 focus:ring-indigo-500" />`;
+      const sentenceHtml = ex.en.replace(regex, inputHtml);
+
+      area.innerHTML = `
+        <div class="space-y-5">
+          <div class="text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-relaxed">
+            ${sentenceHtml}
+          </div>
+          <div class="space-y-2">
+            <div class="text-xs font-bold text-slate-400">
+              Tape la forme conjuguée de <strong class="text-indigo-600 dark:text-indigo-400">${ex.verb}</strong> ou clique sur l'une des formes :
+            </div>
+            <div class="flex flex-wrap gap-2">
+              ${options.map(opt => `
+                <button type="button" data-tense-pill="${opt.replace(/"/g, '&quot;')}" class="tense-fill-pill px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-100 dark:bg-slate-700 text-slate-800 dark:text-slate-100 hover:bg-indigo-600 hover:text-white border border-slate-200 dark:border-slate-600 transition">
+                  ${opt}
+                </button>
+              `).join("")}
+            </div>
+          </div>
+        </div>
+      `;
+
+      const cInput = document.getElementById("tenseClozeInput");
+      if (cInput) {
+        cInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!isTenseAnswerChecked) verifyTenseAnswer();
+            else goToNextTenseExercise();
+          }
+        });
+      }
+
+      area.querySelectorAll(".tense-fill-pill").forEach(pill => {
+        pill.addEventListener("click", () => {
+          playSound("click");
+          const val = pill.dataset.tensePill;
+          const inp = document.getElementById("tenseClozeInput");
+          if (inp) inp.value = val;
+          verifyTenseAnswer();
+        });
+      });
+    }
+  }
+
+  function verifyTenseAnswer() {
+    if (isTenseAnswerChecked) {
+      goToNextTenseExercise();
+      return;
+    }
+
+    const ex = currentTenseSession[currentTenseIndex];
+    if (!ex) return;
+
+    let isCorrect = false;
+    let userVal = "";
+
+    if (currentTenseMode === "qcm") {
+      userVal = selectedTenseQCMOption || "";
+      isCorrect = cleanStr(userVal) === cleanStr(ex.target);
+    } else if (currentTenseMode === "writing") {
+      const inp = document.getElementById("tenseWritingInput");
+      userVal = inp ? inp.value : "";
+      isCorrect = calculateSimilarity(cleanStr(userVal), cleanStr(ex.en)) >= 0.88;
+    } else {
+      const inp = document.getElementById("tenseClozeInput");
+      userVal = inp ? inp.value : "";
+      isCorrect = cleanStr(userVal) === cleanStr(ex.target);
+    }
+
+    isTenseAnswerChecked = true;
+    tenseSessionAnswered++;
+    state.answersCount = (state.answersCount || 0) + 1;
+
+    const feedback = document.getElementById("tenseFeedbackContainer");
+    const verifyBtn = document.getElementById("tenseVerifyBtn");
+    const nextBtn = document.getElementById("tenseNextBtn");
+
+    if (isCorrect) {
+      playSound("success");
+      tenseSessionCorrect++;
+      state.correctCount = (state.correctCount || 0) + 1;
+      state.xp = (state.xp || 0) + 10;
+
+      if (feedback) {
+        feedback.className = "p-5 rounded-2xl border border-emerald-300 dark:border-emerald-800 bg-emerald-50/95 dark:bg-emerald-950/40 text-emerald-900 dark:text-emerald-100 space-y-2";
+        feedback.innerHTML = `
+          <div class="font-extrabold text-base text-emerald-700 dark:text-emerald-300">
+            🎉 Bravo ! Conjugaison parfaite (+10 XP)
+          </div>
+          <div class="text-lg font-black text-slate-900 dark:text-white">
+            "${ex.en}"
+          </div>
+          <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+            💡 <strong>Pourquoi ce temps :</strong> ${ex.note}
+          </p>
+        `;
+        feedback.classList.remove("hidden");
+      }
+    } else {
+      playSound("error");
+      if (feedback) {
+        feedback.className = "p-5 rounded-2xl border border-rose-300 dark:border-rose-800 bg-rose-50/95 dark:bg-rose-950/40 text-rose-900 dark:text-rose-100 space-y-2";
+        feedback.innerHTML = `
+          <div class="font-extrabold text-base text-rose-700 dark:text-rose-300">
+            Pas tout à fait ! La forme attendue de "${ex.verb}" était : <span class="underline">${ex.target}</span>
+          </div>
+          <div class="text-lg font-black text-slate-900 dark:text-white">
+            "${ex.en}"
+          </div>
+          <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+            💡 <strong>Explication :</strong> ${ex.note}
+          </p>
+        `;
+        feedback.classList.remove("hidden");
+      }
+    }
+
+    if (verifyBtn) verifyBtn.classList.add("hidden");
+    if (nextBtn) nextBtn.classList.remove("hidden");
+
+    const accText = document.getElementById("tenseSessionAccuracyText");
+    if (accText && tenseSessionAnswered > 0) {
+      accText.textContent = `Précision : ${Math.round((tenseSessionCorrect / tenseSessionAnswered) * 100)}%`;
+    }
+    saveState();
+  }
+
+  function revealOrSkipTense() {
+    const ex = currentTenseSession[currentTenseIndex];
+    if (!ex) return;
+
+    if (!isTenseAnswerChecked) {
+      isTenseAnswerChecked = true;
+      const feedback = document.getElementById("tenseFeedbackContainer");
+      const verifyBtn = document.getElementById("tenseVerifyBtn");
+      const nextBtn = document.getElementById("tenseNextBtn");
+
+      if (feedback) {
+        feedback.className = "p-5 rounded-2xl border border-amber-300 dark:border-amber-800 bg-amber-50/95 dark:bg-amber-950/40 text-amber-900 dark:text-amber-100 space-y-2";
+        feedback.innerHTML = `
+          <div class="font-extrabold text-sm text-amber-800 dark:text-amber-300">
+            👀 Réponse révélée — Forme conjuguée : <span class="underline">${ex.target}</span>
+          </div>
+          <div class="text-lg font-black text-slate-900 dark:text-white">
+            "${ex.en}"
+          </div>
+          <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300">
+            💡 <strong>Règle :</strong> ${ex.note}
+          </p>
+        `;
+        feedback.classList.remove("hidden");
+      }
+      if (verifyBtn) verifyBtn.classList.add("hidden");
+      if (nextBtn) nextBtn.classList.remove("hidden");
+    } else {
+      goToNextTenseExercise();
+    }
+  }
+
+  function goToNextTenseExercise() {
+    playSound("click");
+    if (currentTenseIndex < currentTenseSession.length - 1) {
+      currentTenseIndex++;
+      renderCurrentTenseExercise();
+    } else {
+      startTenseSession();
+    }
+  }
+
+  function renderIrregularVerbsTable(searchQuery = "") {
+    const tbody = document.getElementById("irregularVerbsTableBody");
+    if (!tbody) return;
+
+    const q = cleanStr(searchQuery);
+    const filtered = IRREGULAR_VERBS_LIST.filter(v => {
+      if (!q) return true;
+      return cleanStr(v.fr).includes(q) || cleanStr(v.base).includes(q) || cleanStr(v.past).includes(q) || cleanStr(v.pp).includes(q);
+    });
+
+    tbody.innerHTML = filtered.map(v => {
+      const spokenForms = `${v.base.split(' ')[0]}, ${v.past.split('/')[0].trim()}, ${v.pp.split('/')[0].trim()}`;
+      return `
+        <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition">
+          <td class="py-3 px-4 font-semibold text-slate-700 dark:text-slate-300">${v.fr}</td>
+          <td class="py-3 px-4 font-bold text-slate-900 dark:text-white">${v.base}</td>
+          <td class="py-3 px-4 font-bold text-amber-700 dark:text-amber-300">${v.past}</td>
+          <td class="py-3 px-4 font-bold text-indigo-600 dark:text-indigo-300">${v.pp}</td>
+          <td class="py-3 px-4 text-right">
+            <button type="button" data-speak-verb="${spokenForms.replace(/"/g, '&quot;')}" class="speak-verb-btn px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-700 hover:bg-indigo-600 hover:text-white transition">
+              🔊 Écouter
+            </button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    tbody.querySelectorAll(".speak-verb-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        speakEnglish(btn.dataset.speakVerb);
+      });
+    });
+  }
+
+  function initTensesTab() {
+    if (!tensesInitialized) {
+      tensesInitialized = true;
+      renderTenseGrammarCard(currentTenseFilter);
+      startTenseSession();
+      renderIrregularVerbsTable("");
+    }
   }
 
   // 21. GLOBAL EVENTS & INIT
@@ -2230,6 +2954,71 @@
       });
     }
 
+    // ==========================================================
+    // VERB TENSES TAB EVENT LISTENERS
+    // ==========================================================
+    document.querySelectorAll('.tense-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        playSound('click');
+        selectTenseFilter(btn.dataset.tenseFilter);
+      });
+    });
+
+    document.querySelectorAll('.tense-mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        playSound('click');
+        currentTenseMode = btn.dataset.tenseMode || 'fill';
+        document.querySelectorAll('.tense-mode-btn').forEach(b => {
+          b.classList.remove('active', 'bg-rose-600', 'text-white', 'shadow-sm');
+          b.classList.add('bg-slate-100', 'dark:bg-slate-700', 'text-slate-700', 'dark:text-slate-300');
+        });
+        btn.classList.add('active', 'bg-rose-600', 'text-white', 'shadow-sm');
+        btn.classList.remove('bg-slate-100', 'dark:bg-slate-700', 'text-slate-700', 'dark:text-slate-300');
+        renderCurrentTenseExercise();
+      });
+    });
+
+    const tenseNewBatchBtn = document.getElementById('tenseNewBatchBtn');
+    if (tenseNewBatchBtn) {
+      tenseNewBatchBtn.addEventListener('click', () => {
+        playSound('click');
+        startTenseSession();
+      });
+    }
+
+    const tensePronounceBtn = document.getElementById('tensePronounceBtn');
+    if (tensePronounceBtn) {
+      tensePronounceBtn.addEventListener('click', () => {
+        const ex = currentTenseSession[currentTenseIndex];
+        if (ex) speakEnglish(ex.en);
+      });
+    }
+
+    const tenseHintBtn = document.getElementById('tenseHintBtn');
+    if (tenseHintBtn) {
+      tenseHintBtn.addEventListener('click', () => {
+        playSound('click');
+        const hb = document.getElementById('tenseHintBox');
+        if (hb) hb.classList.toggle('hidden');
+      });
+    }
+
+    const tenseVerifyBtn = document.getElementById('tenseVerifyBtn');
+    if (tenseVerifyBtn) tenseVerifyBtn.addEventListener('click', verifyTenseAnswer);
+
+    const tenseNextBtn = document.getElementById('tenseNextBtn');
+    if (tenseNextBtn) tenseNextBtn.addEventListener('click', goToNextTenseExercise);
+
+    const tenseSkipBtn = document.getElementById('tenseSkipBtn');
+    if (tenseSkipBtn) tenseSkipBtn.addEventListener('click', revealOrSkipTense);
+
+    const irregularVerbSearch = document.getElementById('irregularVerbSearch');
+    if (irregularVerbSearch) {
+      irregularVerbSearch.addEventListener('input', () => {
+        renderIrregularVerbsTable(irregularVerbSearch.value);
+      });
+    }
+
     // Keyboard Shortcuts (Enter for Verify / Next)
     window.addEventListener('keydown', (e) => {
       const tag = (e.target && e.target.tagName) ? e.target.tagName.toUpperCase() : '';
@@ -2240,6 +3029,12 @@
           e.preventDefault();
           if (!isCurrentAnswerChecked) verifyCurrentAnswer();
           else goToNextPhrase();
+        }
+        const tensesSection = document.getElementById('tab-tenses');
+        if (tensesSection && !tensesSection.classList.contains('hidden')) {
+          e.preventDefault();
+          if (!isTenseAnswerChecked) verifyTenseAnswer();
+          else goToNextTenseExercise();
         }
       } else if (e.code === 'Space') {
         const fcSection = document.getElementById('tab-flashcards');

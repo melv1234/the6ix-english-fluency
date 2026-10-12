@@ -166,6 +166,11 @@
           <span>Parcours 40 Étapes</span>
         </button>
 
+        <button data-tab="tenses" type="button" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 whitespace-nowrap transition">
+          <span>⏳</span>
+          <span>Temps & Conjugaison</span>
+        </button>
+
         <button data-tab="notebook" type="button" class="tab-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-700/50 whitespace-nowrap transition">
           <span>➕</span>
           <span>Ajouter mes phrases</span>
@@ -813,6 +818,290 @@
 
     </section>
 
+    <!-- ========================================================== -->
+    <!-- TAB: TEMPS & CONJUGAISON (VERB TENSES TRAINER)             -->
+    <!-- ========================================================== -->
+    <section id="tab-tenses" class="tab-pane hidden space-y-6">
+
+      <!-- HEADER & TENSE PICKER -->
+      <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700/80 p-5 sm:p-6 shadow-sm space-y-5">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-700/60 pb-4">
+          <div>
+            <span class="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 mb-2">
+              ⏳ Maîtrise des Verbes Anglais
+            </span>
+            <h2 class="text-xl sm:text-2xl font-black text-slate-900 dark:text-white font-heading">
+              Entraînement aux Temps : Passé, Présent & Futur
+            </h2>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+              Choisis exactement le temps (ou la famille de temps) que tu préfères travailler aujourd'hui.
+            </p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <button id="tenseNewBatchBtn" type="button" class="px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/60 hover:bg-indigo-100 transition flex items-center gap-1.5">
+              <span>🔄</span>
+              <span>Nouvelle série (15 verbes)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 1. FAMILLES PRINCIPALES (MÉLANGE / PRÉSENT / PASSÉ / FUTUR) -->
+        <div class="space-y-2">
+          <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-400">
+            1. Choisir une grande famille de temps :
+          </label>
+          <div class="flex flex-wrap gap-2">
+            <button type="button" data-tense-filter="all" class="tense-filter-btn active px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-indigo-600 text-white shadow-sm transition flex items-center gap-1.5">
+              <span>🌟</span>
+              <span>Tous les temps (Mélange)</span>
+            </button>
+            <button type="button" data-tense-filter="present_all" class="tense-filter-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition flex items-center gap-1.5">
+              <span>☀️</span>
+              <span>Tout le Présent</span>
+            </button>
+            <button type="button" data-tense-filter="past_all" class="tense-filter-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition flex items-center gap-1.5">
+              <span>⏪</span>
+              <span>Tout le Passé</span>
+            </button>
+            <button type="button" data-tense-filter="future_all" class="tense-filter-btn px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition flex items-center gap-1.5">
+              <span>🚀</span>
+              <span>Tout le Futur & Conditionnel</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. TEMPS PRÉCIS AU CHOIX -->
+        <div class="space-y-2">
+          <label class="block text-[11px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-slate-400">
+            2. Ou cibler un temps spécifique :
+          </label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+            <button type="button" data-tense-filter="present_simple" class="tense-filter-btn text-left px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition flex items-center justify-between">
+              <span>☀️ Présent Simple <span class="font-normal opacity-75">(I work / She works)</span></span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">Présent</span>
+            </button>
+            <button type="button" data-tense-filter="present_continuous" class="tense-filter-btn text-left px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition flex items-center justify-between">
+              <span>⚡ Présent Continu <span class="font-normal opacity-75">(I am working)</span></span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">Présent</span>
+            </button>
+            <button type="button" data-tense-filter="past_regular" class="tense-filter-btn text-left px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition flex items-center justify-between">
+              <span>⏪ Passé Régulier & Was/Were <span class="font-normal opacity-75">(walked / didn't)</span></span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300">Passé</span>
+            </button>
+            <button type="button" data-tense-filter="past_irregular" class="tense-filter-btn text-left px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition flex items-center justify-between">
+              <span>🔥 Passé Irrégulier <span class="font-normal opacity-75">(went, saw, had, bought)</span></span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300">Passé</span>
+            </button>
+            <button type="button" data-tense-filter="present_perfect" class="tense-filter-btn text-left px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition flex items-center justify-between">
+              <span>✨ Present Perfect <span class="font-normal opacity-75">(I have been / She has seen)</span></span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300">Bilan / Passé</span>
+            </button>
+            <button type="button" data-tense-filter="past_continuous" class="tense-filter-btn text-left px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition flex items-center justify-between">
+              <span>🎬 Passé Continu <span class="font-normal opacity-75">(I was sleeping when...)</span></span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300">Passé</span>
+            </button>
+            <button type="button" data-tense-filter="future_going_to" class="tense-filter-btn text-left px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition flex items-center justify-between">
+              <span>📅 Futur Proche : Going To <span class="font-normal opacity-75">(I'm going to call)</span></span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300">Futur</span>
+            </button>
+            <button type="button" data-tense-filter="future_will" class="tense-filter-btn text-left px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition flex items-center justify-between">
+              <span>🚀 Futur Simple : Will / Won't <span class="font-normal opacity-75">(I will help you)</span></span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300">Futur</span>
+            </button>
+            <button type="button" data-tense-filter="conditional" class="tense-filter-btn text-left px-3.5 py-2.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 transition flex items-center justify-between">
+              <span>💭 Conditionnel : Would / Could / Should</span>
+              <span class="text-[10px] px-1.5 py-0.5 rounded bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300">Conditionnel</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. MODE D'EXERCICE -->
+        <div class="pt-2 border-t border-slate-100 dark:border-slate-700/60 flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="text-xs font-bold text-slate-500 dark:text-slate-400">Format d'exercice :</span>
+            <button type="button" data-tense-mode="fill" class="tense-mode-btn active px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-600 text-white shadow-sm transition">
+              ✍️ Conjuguer le verbe (+ 4 choix)
+            </button>
+            <button type="button" data-tense-mode="qcm" class="tense-mode-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">
+              🎯 QCM Express (4 temps)
+            </button>
+            <button type="button" data-tense-mode="writing" class="tense-mode-btn px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 transition">
+              ⌨️ Phrase complète
+            </button>
+          </div>
+          <div class="text-xs font-semibold text-slate-500 dark:text-slate-400" id="tensePoolCountBadge">
+            180 exercices de conjugaison disponibles
+          </div>
+        </div>
+      </div>
+
+      <!-- DYNAMIC GRAMMAR CHEAT-SHEET FOR SELECTED TENSE -->
+      <div id="tenseGrammarCard" class="bg-gradient-to-r from-indigo-50/90 via-white to-rose-50/80 dark:from-slate-800 dark:via-slate-800/95 dark:to-indigo-950/40 rounded-3xl border border-indigo-200/80 dark:border-indigo-800/50 p-5 sm:p-6 shadow-sm space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xl" id="tenseRuleIcon">🌟</span>
+            <h3 class="text-base sm:text-lg font-extrabold text-slate-900 dark:text-white font-heading" id="tenseRuleTitle">
+              Mémo Grammatical : Tous les temps (Repérer les indices)
+            </h3>
+          </div>
+          <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/60 text-indigo-700 dark:text-indigo-200" id="tenseTimeMarkers">
+            Indices : yesterday (passé) • right now (continu) • every day (présent) • tomorrow (futur)
+          </span>
+        </div>
+
+        <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed" id="tenseRuleUsage">
+          Astuce clé : En anglais, regarde toujours le <strong>mot-indice de temps</strong> dans la phrase avant de conjuguer ! Par exemple, <em>yesterday</em> ou <em>last week</em> appelle le Passé Simple, tandis que <em>right now</em> appelle BE + -ING.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
+          <div class="p-3 rounded-2xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200/70 dark:border-emerald-800/50">
+            <div class="text-[11px] font-extrabold uppercase text-emerald-700 dark:text-emerald-300">➕ Forme Affirmative</div>
+            <div class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 mt-0.5" id="tenseFormulaPos">
+              Présent : I work / She works • Passé : I worked / I went • Futur : I will work / I'm going to work
+            </div>
+          </div>
+          <div class="p-3 rounded-2xl bg-rose-50/80 dark:bg-rose-950/30 border border-rose-200/70 dark:border-rose-800/50">
+            <div class="text-[11px] font-extrabold uppercase text-rose-700 dark:text-rose-300">➖ Forme Négative</div>
+            <div class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 mt-0.5" id="tenseFormulaNeg">
+              Présent : don't / doesn't + base • Passé : didn't + base • Futur : won't + base
+            </div>
+          </div>
+          <div class="p-3 rounded-2xl bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200/70 dark:border-amber-800/50">
+            <div class="text-[11px] font-extrabold uppercase text-amber-700 dark:text-amber-300">❓ Forme Question</div>
+            <div class="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 mt-0.5" id="tenseFormulaQuestion">
+              Présent : Do / Does + sujet + base ? • Passé : Did + sujet + base ? • Futur : Will + sujet + base ?
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INTERACTIVE VERB TENSE EXERCISE CARD -->
+      <div id="tenseExerciseCard" class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700/80 shadow-lg overflow-hidden">
+        
+        <!-- Progress bar header -->
+        <div class="bg-slate-50 dark:bg-slate-800/90 px-6 py-3.5 border-b border-slate-200/70 dark:border-slate-700/70 flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-indigo-600 dark:text-indigo-400" id="tenseSessionProgressText">
+              Verbe 1 / 15
+            </span>
+            <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400" id="tenseSessionAccuracyText">
+              Précision : 100%
+            </span>
+          </div>
+          <div class="w-full sm:w-64 h-2.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div id="tenseSessionProgressBar" class="h-full bg-gradient-to-r from-indigo-500 to-rose-500 rounded-full transition-all duration-300" style="width: 7%"></div>
+          </div>
+        </div>
+
+        <!-- Main Exercise Body -->
+        <div class="p-6 sm:p-8 space-y-6">
+          
+          <!-- Top Badges & Audio/Hint Tools -->
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="flex flex-wrap items-center gap-2">
+              <span id="tenseCardBadge" class="px-3 py-1 rounded-full text-xs font-extrabold bg-indigo-100 dark:bg-indigo-950/80 text-indigo-700 dark:text-indigo-300">
+                ☀️ Présent Simple
+              </span>
+              <span id="tenseVerbPromptBadge" class="px-3 py-1 rounded-full text-xs font-extrabold bg-rose-100 dark:bg-rose-950/80 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800/50">
+                Verbe : TO GO
+              </span>
+              <span id="tenseMarkerBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300">
+                Indice : yesterday
+              </span>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button id="tensePronounceBtn" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-rose-50 hover:text-rose-600 transition flex items-center gap-1.5">
+                <span>🔊</span>
+                <span>Écouter</span>
+              </button>
+              <button id="tenseHintBtn" type="button" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800/50 hover:bg-amber-100 transition flex items-center gap-1.5">
+                <span>💡</span>
+                <span>Indice conjugaison</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- French Prompt & Verb Instruction -->
+          <div class="p-5 rounded-2xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/70 space-y-1.5">
+            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Sens en français & Temps demandé :
+            </div>
+            <p id="tensePromptFr" class="text-lg sm:text-xl font-bold text-slate-800 dark:text-slate-100">
+              Hier, je suis allé(e) au marché St. Lawrence.
+            </p>
+          </div>
+
+          <!-- Collapsible Hint Box -->
+          <div id="tenseHintBox" class="hidden p-4 rounded-2xl bg-amber-50/90 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/60 text-xs sm:text-sm text-amber-900 dark:text-amber-200">
+            <p id="tenseHintText"></p>
+          </div>
+
+          <!-- Dynamic Interaction Area -->
+          <div id="tenseInteractionArea" class="py-2">
+            <!-- Populated dynamically by JS -->
+          </div>
+
+          <!-- Feedback Box -->
+          <div id="tenseFeedbackContainer" class="hidden"></div>
+
+        </div>
+
+        <!-- Card Footer Actions -->
+        <div class="bg-slate-50 dark:bg-slate-800/90 px-6 py-4 border-t border-slate-200/70 dark:border-slate-700/70 flex flex-wrap items-center justify-between gap-3">
+          <button id="tenseSkipBtn" type="button" class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white hover:bg-slate-200/60 dark:hover:bg-slate-700 transition">
+            Passer / Voir la réponse
+          </button>
+
+          <div class="flex items-center gap-3">
+            <button id="tenseVerifyBtn" type="button" class="px-6 py-2.5 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-500/20 transition">
+              ✓ Vérifier la conjugaison
+            </button>
+            <button id="tenseNextBtn" type="button" class="hidden px-6 py-2.5 rounded-xl text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-500/20 transition">
+              Verbe suivant ➔
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- IRREGULAR VERBS & KEY TENSES REFERENCE TABLE -->
+      <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700/80 p-6 sm:p-8 shadow-sm space-y-5">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 class="text-lg sm:text-xl font-black text-slate-900 dark:text-white font-heading">
+              📋 Tableau des 45 Verbes Irréguliers & Essentiels (Avec Audio 🔊)
+            </h3>
+            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+              Clique sur 🔊 pour entendre la prononciation des 3 temps (Présent • Passé Simple • Participe Passé).
+            </p>
+          </div>
+          <div class="w-full sm:w-72">
+            <input id="irregularVerbSearch" type="text" placeholder="🔍 Chercher un verbe (ex: go, aller, bought)..." class="w-full px-3.5 py-2 rounded-xl border border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 text-xs sm:text-sm focus:border-indigo-500 outline-none" />
+          </div>
+        </div>
+
+        <div class="overflow-x-auto custom-scrollbar rounded-2xl border border-slate-200 dark:border-slate-700">
+          <table class="w-full text-left border-collapse text-xs sm:text-sm">
+            <thead>
+              <tr class="bg-slate-100 dark:bg-slate-900/80 text-slate-600 dark:text-slate-300 font-extrabold uppercase text-[11px] tracking-wider">
+                <th class="py-3 px-4">Français</th>
+                <th class="py-3 px-4">Base (Présent / Infinitif)</th>
+                <th class="py-3 px-4">Passé Simple (Yesterday)</th>
+                <th class="py-3 px-4">Participe Passé (Have/Has...)</th>
+                <th class="py-3 px-4 text-right">Audio</th>
+              </tr>
+            </thead>
+            <tbody id="irregularVerbsTableBody" class="divide-y divide-slate-200/70 dark:divide-slate-700/60">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
   </main>
 
   <!-- ========================================================== -->
@@ -826,7 +1115,7 @@
   </footer>
 
   <!-- CORE SCRIPTS -->
-  <script src="data_english_curriculum.js?v=4.0"></script>
-  <script src="app_english.js?v=4.0"></script>
+  <script src="data_english_curriculum.js?v=5.0"></script>
+  <script src="app_english.js?v=5.0"></script>
 </body>
 </html>
